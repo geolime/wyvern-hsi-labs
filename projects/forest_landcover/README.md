@@ -85,24 +85,6 @@ Spectral Index Analysis
 v
 Result Validation
 
----
-
-### Mermaid Diagram (optional)
-
-If your markdown renderer supports Mermaid:
-
-```mermaid
-flowchart TD
-    A[Wyvern Hyperspectral Cube] --> B[QA Masking & Preprocessing]
-    B --> C[Spectral Normalization]
-    C --> D[KMeans + PCA]
-    C --> E[SAM Classification]
-    D --> F[Cluster Spectra Analysis]
-    D --> G[Spectral Index Analysis]
-    E --> G
-    G --> H[Validation & Interpretation]
-
-
 ## Processing Overview
 
 The workflow follows four main steps:
