@@ -18,7 +18,7 @@ Techniques:
 - NDVI and red-edge spectral validation
 - PCA visualization composites
 
-➡ View project: [Forest Land Cover Mapping](projects/01_forest_landcover)
+➡ View project: [Forest Land Cover Mapping](projects/forest_landcover)
 
 ---
 
