@@ -288,6 +288,7 @@ Run scripts in this order:
     python scripts/25_analsysis_metrics.py
 
 All outputs are written to the `outputs/` directory.
+```
 
 ---
 
