@@ -96,6 +96,15 @@ The workflow follows four main steps:
 
 ---
 
+## Raw Hyperspectral Visualization (Before Classification)
+
+**RGB Composite (visible bands)**  
+![RGB Quicklook](outputs/rgb.png)
+
+**False Color CIR Composite (NIR–Red–Green)**  
+![CIR Quicklook](outputs/cir.png)
+
+---
 ## Preprocessing
 
 - Hyperspectral cube loaded using Rasterio  

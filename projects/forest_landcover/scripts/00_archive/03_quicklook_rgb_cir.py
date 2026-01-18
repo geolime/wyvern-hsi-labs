@@ -66,10 +66,10 @@ def main():
     wl_nm = parse_wavelengths_nm_from_descriptions(desc)
 
     rgb = make_rgb(da, wl_nm, (660.0, 560.0, 490.0))
-    save_png(rgb, OUTPUTS_DIR / "rgb.png", "RGB quicklook (660, 560, 490 nm)")
+    save_png(rgb, OUTPUTS_DIR / "rgb.png", "RGB (660, 560, 490 nm)")
 
     cir = make_rgb(da, wl_nm, (800.0, 660.0, 560.0))
-    save_png(cir, OUTPUTS_DIR / "cir.png", "CIR quicklook (800, 660, 560 nm)")
+    save_png(cir, OUTPUTS_DIR / "cir.png", "CIR  (800, 660, 560 nm)")
 
     print("Wrote:")
     print(" -", OUTPUTS_DIR / "rgb.png")
