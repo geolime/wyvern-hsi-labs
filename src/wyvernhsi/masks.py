@@ -1,6 +1,11 @@
 from __future__ import annotations
 import numpy as np
 import rasterio
+from pathlib import Path
+import rasterio
+import numpy as np
+
+from wyvernhsi.paths import OUTPUTS_DIR
 
 
 def _band_index_by_name(ds: rasterio.DatasetReader, name: str) -> int:
@@ -36,3 +41,26 @@ def load_valid_mask(mask_path) -> np.ndarray:
     ground_interference = (cloud == 1) | (haze == 1) | (shadow == 1)
 
     return clear_ok & (~ground_interference)
+
+def load_water_mask() -> np.ndarray:
+    """
+    Load project-local water mask produced by 11_water_mask.py
+
+    Returns:
+        Boolean array (True = water)
+    """
+
+    mask_path = OUTPUTS_DIR / "masks" / "water_mask.tif"
+
+    if not mask_path.exists():
+        raise FileNotFoundError(
+            f"Water mask not found:\n{mask_path}\n"
+            "Run 11_water_mask.py first."
+        )
+
+    with rasterio.open(mask_path) as ds:
+        m = ds.read(1)
+
+    return m == 1
+
+

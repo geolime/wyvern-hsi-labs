@@ -1,0 +1,15 @@
+SFA KMeans water classes (water-only)
+Relabeled by median NDTI: 0=clearest, higher=more turbid
+
+0: clear / deep water
+1: low turbidity (transitional)
+2: moderate turbidity
+3: turbid water
+4: high turbidity / sediment plume
+
+Cluster feature medians (ordered):
+cluster 0: n=1198188, ndti_med=-0.287, ndci_med=-0.220, nir_red_med=0.322
+cluster 1: n=1339623, ndti_med=-0.271, ndci_med=-0.163, nir_red_med=0.398
+cluster 2: n=1333317, ndti_med=-0.187, ndci_med=-0.151, nir_red_med=0.408
+cluster 3: n=809472, ndti_med=-0.155, ndci_med=-0.109, nir_red_med=0.466
+cluster 4: n=776397, ndti_med=-0.054, ndci_med=-0.048, nir_red_med=0.694

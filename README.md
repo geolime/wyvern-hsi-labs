@@ -21,5 +21,13 @@ Techniques:
 ➡ View project: [Forest Land Cover Mapping](projects/forest_landcover)
 
 ---
+### Water Quality — Bitter Lake (Egypt)
 
+Hyperspectral water analysis using Wyvern Open Data.  
+Includes turbidity and chlorophyll proxy mapping, spectral feature analysis, and unsupervised optical water-type clustering.
+
+
+➡ View project: [Water Quality Mapping](projects/water_quality)
+
+---
 More projects will be added over time.

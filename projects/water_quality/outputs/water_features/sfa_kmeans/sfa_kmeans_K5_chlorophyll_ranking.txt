@@ -1,0 +1,7 @@
+Clusters ranked by NDCI median (higher = more chlorophyll-like signal)
+
+cluster 4: ndci_med=-0.048, ndti_med=-0.054, nir_red_med=0.694, n=776397
+cluster 3: ndci_med=-0.109, ndti_med=-0.155, nir_red_med=0.466, n=809472
+cluster 2: ndci_med=-0.151, ndti_med=-0.187, nir_red_med=0.408, n=1333317
+cluster 1: ndci_med=-0.163, ndti_med=-0.271, nir_red_med=0.398, n=1339623
+cluster 0: ndci_med=-0.220, ndti_med=-0.287, nir_red_med=0.322, n=1198188

@@ -1,0 +1,9 @@
+Cluster legend (ordered by turbidity, based on median NDTI)
+0 = clearest water
+Higher = more turbid / optically active
+
+Cluster 0: NDTI_med=-0.287, NDCI_med=-0.218, n=1271616
+Cluster 1: NDTI_med=-0.265, NDCI_med=-0.162, n=1462543
+Cluster 2: NDTI_med=-0.175, NDCI_med=-0.135, n=1830710
+Cluster 3: NDTI_med=-0.152, NDCI_med=-0.006, n=156845
+Cluster 4: NDTI_med=-0.052, NDCI_med=-0.053, n=735283
