@@ -21,7 +21,7 @@ Techniques:
 ➡ View project: [Forest Land Cover Mapping](projects/forest_landcover)
 
 ---
-### 2) Water Quality Analysis (Bitter Lake, Egypt)
+### 2) Water Quality Analysis
 
 Location: Bitter Lake, Egypt
 
