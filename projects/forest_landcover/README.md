@@ -56,9 +56,7 @@ Wyvern QA cloud masks were applied to remove cloud-contaminated pixels.
 
 ---
 
-## Processing Pipeline
-
-## Processing Overview
+## Processing Pipeline Overview
 
 The workflow follows four main steps:
 
