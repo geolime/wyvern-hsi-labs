@@ -58,33 +58,6 @@ Wyvern QA cloud masks were applied to remove cloud-contaminated pixels.
 
 ## Processing Pipeline
 
-### Conceptual Workflow
-
-Wyvern Hyperspectral Image
-|
-v
-Preprocessing & QA Masking
-|
-v
-Spectral Normalization (L2)
-|
-+------------------------+
-| |
-v v
-KMeans Clustering (PCA) SAM Classification
-| |
-v v
-Cluster Spectra Analysis Class Maps
-| |
-+-----------+------------+
-|
-v
-Spectral Index Analysis
-(NDVI, Red-edge)
-|
-v
-Result Validation
-
 ## Processing Overview
 
 The workflow follows four main steps:
