@@ -19,13 +19,16 @@ import matplotlib.pyplot as plt
 import numpy as np
 import rasterio
 from rasterio.windows import Window
+import logging
 
 from wyvernhsi import clustering, io
 from wyvernhsi.config import Config, load_config
+from wyvernhsi.logging_setup import configure_logging
 from wyvernhsi.masks import load_valid_mask
 from wyvernhsi.paths import project_dir_of, repo_root, resolve_scene
 from wyvernhsi.wavelengths import parse_wavelengths_nm_from_descriptions
 
+logger = logging.getLogger(__name__)
 
 def _clip(r0, r1, c0, c1, height, width):
     return max(0, r0), min(height, r1), max(0, c0), min(width, c1)
@@ -63,7 +66,7 @@ def plot_cluster_spectra(means, counts, wl_nm, pca_components, out_png):
     plt.tight_layout()
     plt.savefig(out_png, dpi=200)
     plt.close()
-    print("Wrote:", out_png)
+    logger.info("Wrote: %s", out_png)
 
 
 def main(config: Config) -> None:
@@ -78,9 +81,12 @@ def main(config: Config) -> None:
     with rasterio.open(scene.reflectance) as ds:
         wl_nm = parse_wavelengths_nm_from_descriptions(list(ds.descriptions))
         win = subset_window(ds, cl)
-        print("Mode:", "FULL SCENE" if win is None else
-              f"SUBSET rows[{int(win.row_off)}:{int(win.row_off + win.height)}] "
-              f"cols[{int(win.col_off)}:{int(win.col_off + win.width)}]")
+        logger.info(
+            "Mode: %s",
+            "FULL SCENE" if win is None else
+            f"SUBSET rows[{int(win.row_off)}:{int(win.row_off + win.height)}] "
+            f"cols[{int(win.col_off)}:{int(win.col_off + win.width)}]",
+    )
 
         cube = io.read_cube(ds, window=win)
         cube[~_subset_mask(valid_full, win)] = np.nan
@@ -88,7 +94,7 @@ def main(config: Config) -> None:
         pca, kmeans = clustering.fit_pca_kmeans(
             X, k=cl.k, pca_components=cl.pca_components, n_samples=cl.n_samples, random_state=seed,
         )
-        print("Fitted PCA + KMeans.")
+        logger.info("Fitted PCA + KMeans.")
 
         profile = ds.profile.copy()
         profile.update(
@@ -112,7 +118,7 @@ def main(config: Config) -> None:
             samples=str(min(cl.n_samples, X.shape[0])),
             mode="subset" if win is not None else "full",
         )
-    print("Wrote:", out_tif)
+    logger.info("Wrote: %s", out_tif)
 
     with rasterio.open(out_tif) as ds_lab:
         lab = ds_lab.read(1)
@@ -124,7 +130,7 @@ def main(config: Config) -> None:
     out_png = scene.outputs_dir / f"kmeans_clusters_K{cl.k}.png"
     plt.savefig(out_png, dpi=200)
     plt.close()
-    print("Wrote:", out_png)
+    logger.info("Wrote: %s", out_png)
 
     with rasterio.open(scene.reflectance) as ds, rasterio.open(out_tif) as lab_ds:
         tiles = (
@@ -137,4 +143,5 @@ def main(config: Config) -> None:
 
 
 if __name__ == "__main__":
+    configure_logging()
     main(load_config(repo_root() / "configs" / f"{project_dir_of(__file__).name}.yaml"))

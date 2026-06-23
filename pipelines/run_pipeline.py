@@ -8,9 +8,14 @@ from __future__ import annotations
 
 import argparse
 import importlib.util
+import logging
+from datetime import datetime
 from pathlib import Path
 
 from wyvernhsi.config import load_config
+from wyvernhsi.logging_setup import configure_logging
+
+logger = logging.getLogger("pipeline")
 
 
 def _load_stage_main(script_path: Path):
@@ -44,19 +49,23 @@ def main() -> None:
     args = ap.parse_args()
 
     config = load_config(args.config)
+    run_id = datetime.now().strftime("%Y%m%dT%H%M%S")
+    log_dir = config.project_dir / "outputs" / "logs" / run_id
+    configure_logging(log_dir)
+
     scripts_dir = config.project_dir / "scripts"
     only = [t.strip() for t in args.stages.split(",")] if args.stages else None
     selected = _select(config.stages, only, args.start)
 
-    print(f"Project: {config.name}")
-    print(f"Stages:  {', '.join(selected)}")
+    logger.info("Project: %s", config.name)
+    logger.info("Stages: %s", ", ".join(selected))
     for stage in selected:
         script_path = scripts_dir / stage
         if not script_path.exists():
             raise FileNotFoundError(f"Stage script not found: {script_path}")
-        print(f"\n=== {stage} ===")
+        logger.info("=== %s ===", stage)
         _load_stage_main(script_path)(config)
-    print("\nPipeline complete.")
+    logger.info("Pipeline complete. Log: %s", log_dir / "pipeline.log")
 
 
 if __name__ == "__main__":

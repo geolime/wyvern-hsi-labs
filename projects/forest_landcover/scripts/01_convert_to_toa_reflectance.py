@@ -2,8 +2,10 @@ from __future__ import annotations
 from pathlib import Path
 
 import rasterio
+import logging
 
 from wyvernhsi.config import Config, load_config
+from wyvernhsi.logging_setup import configure_logging
 from wyvernhsi.paths import project_dir_of, repo_root, resolve_scene
 from wyvernhsi.radiometry import (
     replace_nodata_with_nan,
@@ -12,6 +14,7 @@ from wyvernhsi.radiometry import (
 )
 from wyvernhsi.stac import load_wyvern_radiometry_meta
 
+logger = logging.getLogger(__name__)
 
 def find_stac_item_json(image_path: Path) -> Path:
     """
@@ -54,9 +57,9 @@ def main(config: Config) -> None:
 
     out_tif = out_dir / f"{image_path.stem}_toa_reflectance.tif"
 
-    print("Input radiance:", image_path)
-    print("STAC item:", stac_json)
-    print("Output reflectance:", out_tif)
+    logger.info("Input radiance: %s", image_path)
+    logger.info("STAC item: %s", stac_json)
+    logger.info("Output reflectance: %s", out_tif)
 
     with rasterio.open(image_path) as src:
         radiance = replace_nodata_with_nan(src.read(), src.nodata)
@@ -100,8 +103,9 @@ def main(config: Config) -> None:
                 stac_item=str(stac_json.name),
             )
 
-    print("Done.")
+    logger.info("Done.")
 
 
 if __name__ == "__main__":
+    configure_logging()
     main(load_config(repo_root() / "configs" / f"{project_dir_of(__file__).name}.yaml"))

@@ -20,12 +20,15 @@ from __future__ import annotations
 import numpy as np
 import rasterio
 from scipy.ndimage import binary_opening, binary_closing, label
+import logging
 
 from wyvernhsi import indices, io, visualization
 from wyvernhsi.config import Config, load_config
+from wyvernhsi.logging_setup import configure_logging
 from wyvernhsi.masks import load_valid_mask
 from wyvernhsi.paths import project_dir_of, repo_root, resolve_scene
 
+logger = logging.getLogger(__name__)
 
 def main(config: Config) -> None:
     m = config.masking
@@ -89,11 +92,14 @@ def main(config: Config) -> None:
         nodata=0, dtype="uint8", descriptions=["WATER_MASK"],
     )
 
-    print("Water mask stats:")
-    print(f"  water pixels: {water_mask.sum():,}")
-    print(f"  valid pixels: {valid_mask.sum():,}")
-    print(f"  water share of valid: {water_mask.sum() / max(valid_mask.sum(), 1):.3f}")
+    logger.info(
+        "Water mask: %d water px / %d valid px (share %.3f)",
+        int(water_mask.sum()), int(valid_mask.sum()),
+        water_mask.sum() / max(valid_mask.sum(), 1),
+    )
+    logger.info("Wrote: %s", out_dir / "water_mask.tif")
 
 
 if __name__ == "__main__":
+    configure_logging()
     main(load_config(repo_root() / "configs" / f"{project_dir_of(__file__).name}.yaml"))

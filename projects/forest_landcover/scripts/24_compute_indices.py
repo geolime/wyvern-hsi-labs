@@ -17,13 +17,16 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import rasterio
+import logging
 
 from wyvernhsi import indices, io
 from wyvernhsi.config import Config, load_config
+from wyvernhsi.logging_setup import configure_logging
 from wyvernhsi.paths import project_dir_of, repo_root, resolve_scene
 
 SAM_NAMES = {0: "trees", 1: "vegetation", 2: "soil"}
 
+logger = logging.getLogger(__name__)
 
 def _stats(source, name, mask, ndvi, re_slope) -> dict:
     return {
@@ -71,7 +74,7 @@ def main(config: Config) -> None:
 
     out_csv = outputs / "spectral_index_stats.csv"
     pd.DataFrame(results).to_csv(out_csv, index=False)
-    print("Wrote:", out_csv)
+    logger.info("Wrote: %s", out_csv)
 
     fig, axes = plt.subplots(1, 2, figsize=(12, 5))
     for ax, values, title in (
@@ -94,8 +97,9 @@ def main(config: Config) -> None:
     out_png = outputs / "spectral_indices_kmeans.png"
     fig.savefig(out_png, dpi=200)
     plt.close(fig)
-    print("Wrote:", out_png)
+    logger.info("Wrote: %s", out_png)
 
 
 if __name__ == "__main__":
+    configure_logging()
     main(load_config(repo_root() / "configs" / f"{project_dir_of(__file__).name}.yaml"))
