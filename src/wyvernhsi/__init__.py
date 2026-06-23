@@ -4,10 +4,11 @@ from __future__ import annotations
 __version__ = "0.1.0"
 
 from wyvernhsi import (
-    clustering, indices, io, masks, paths, radiometry, stac, visualization, wavelengths,
+    clustering, indices, io, masks, paths, radiometry, reporting, stac,
+    visualization, wavelengths,
 )
 
 __all__ = [
-    "clustering", "indices", "io", "masks", "paths", "radiometry", "stac",
-    "visualization", "wavelengths", "__version__",
+    "clustering", "indices", "io", "masks", "paths", "radiometry", "reporting",
+    "stac", "visualization", "wavelengths", "__version__",
 ]

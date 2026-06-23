@@ -14,6 +14,7 @@ from pathlib import Path
 
 from wyvernhsi.config import load_config
 from wyvernhsi.logging_setup import configure_logging
+from wyvernhsi import reporting
 
 logger = logging.getLogger("pipeline")
 
@@ -65,6 +66,11 @@ def main() -> None:
             raise FileNotFoundError(f"Stage script not found: {script_path}")
         logger.info("=== %s ===", stage)
         _load_stage_main(script_path)(config)
+    outputs = config.project_dir / "outputs"
+    manifest = reporting.build_manifest(config, run_id)
+    reporting.write_manifest(manifest, outputs / "manifest.json")
+    reporting.write_report(manifest, outputs / "report.md")
+    logger.info("Wrote run manifest + report under %s", outputs)
     logger.info("Pipeline complete. Log: %s", log_dir / "pipeline.log")
 
 
