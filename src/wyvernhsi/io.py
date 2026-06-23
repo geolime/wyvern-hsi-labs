@@ -84,6 +84,8 @@ def write_geotiff(
         nodata=nodata,
         compress="deflate",
         tiled=True,
+        blockxsize=256,
+        blockysize=256,
         predictor=2 if np.issubdtype(np.dtype(dtype), np.integer) else 3,
     )
     with rasterio.open(out_path, "w", **profile) as dst:
