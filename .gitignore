@@ -1,12 +1,34 @@
-# Python
+# Virtual environments
 .venv/
+venv/
+env/
+
+# Python
 __pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+build/
+dist/
+
+# Jupyter
 .ipynb_checkpoints/
 
-# Data (keep big imagery out of git)
-data/
-*.tif
-*.tiff
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
 
-# Generated outputs
-outputs/
+# Regenerable analysis artifacts (recreated by the pipeline)
+projects/*/outputs/
+projects/*/outputs_*/
+projects/*/data/derived/
+outputs/logs/
+
+# Large RAW input scenes — DECISION POINT (see notes below).
+# Leave commented to keep sample scenes in-repo so reviewers can run the pipeline.
+# Uncomment to stop versioning multi-hundred-MB hyperspectral rasters.
+projects/*/data/*.tif
+projects/*/data/*.tiff
