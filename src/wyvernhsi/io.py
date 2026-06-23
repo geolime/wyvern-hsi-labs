@@ -4,6 +4,7 @@ from pathlib import Path
 
 import numpy as np
 import rasterio
+from rasterio.windows import Window
 
 from wyvernhsi.wavelengths import (
     parse_wavelengths_nm_from_descriptions,
@@ -19,12 +20,29 @@ def read_band(ds: rasterio.DatasetReader, band_1based: int) -> np.ndarray:
     return arr
 
 
-def read_cube(ds: rasterio.DatasetReader) -> np.ndarray:
-    """Read all bands as an (H, W, B) float32 cube with nodata set to NaN."""
-    cube = ds.read().astype(np.float32)  # (B, H, W)
+def read_cube(ds: rasterio.DatasetReader, window: Window | None = None) -> np.ndarray:
+    """Read bands (optionally within a window) as an (H, W, B) float32 cube; nodata -> NaN."""
+    cube = ds.read(window=window).astype(np.float32)  # (B, H, W)
     if ds.nodata is not None:
         cube[cube == ds.nodata] = np.nan
     return np.transpose(cube, (1, 2, 0))  # (H, W, B)
+
+
+def iter_windows(
+    ds: rasterio.DatasetReader, tile_size: int, window: Window | None = None
+):
+    """Yield tile-sized Windows tiling the full scene, or the given subset window."""
+    if window is None:
+        row0, col0, height, width = 0, 0, ds.height, ds.width
+    else:
+        row0, col0 = int(window.row_off), int(window.col_off)
+        height, width = int(window.height), int(window.width)
+    for r in range(0, height, tile_size):
+        for c in range(0, width, tile_size):
+            rr0, cc0 = row0 + r, col0 + c
+            rr1 = min(row0 + height, rr0 + tile_size)
+            cc1 = min(col0 + width, cc0 + tile_size)
+            yield Window.from_slices((rr0, rr1), (cc0, cc1))
 
 
 def wavelengths_nm(ds: rasterio.DatasetReader) -> np.ndarray:
