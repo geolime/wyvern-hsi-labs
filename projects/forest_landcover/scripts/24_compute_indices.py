@@ -4,7 +4,7 @@ Spectral-index separability of KMeans clusters and SAM classes.
 Computes NDVI and red-edge slope, then summarises each class's index distribution
 to a CSV and a boxplot figure for the README.
 
-Inputs:  ACTIVE_WYVERN_FILE (TOA reflectance), kmeans_clusters_K5.tif, sam_fullscene_class.tif
+Inputs:  reflectance, kmeans_clusters_K5.tif, sam_fullscene_class.tif
 Outputs: spectral_index_stats.csv, spectral_indices_kmeans.png
 """
 from __future__ import annotations
@@ -17,10 +17,7 @@ import pandas as pd
 import rasterio
 
 from wyvernhsi import indices, io
-from wyvernhsi.paths import ACTIVE_WYVERN_FILE, OUTPUTS_DIR
-
-KMEANS_TIF = OUTPUTS_DIR / "kmeans_clusters_K5.tif"
-SAM_TIF = OUTPUTS_DIR / "sam_fullscene_class.tif"
+from wyvernhsi.paths import project_dir_of, resolve_scene
 
 NM_RED, NM_RED_EDGE, NM_NIR = 660.0, 720.0, 800.0
 N_CLUSTERS = 5
@@ -28,7 +25,7 @@ MIN_PIXELS = 1000
 SAM_NAMES = {0: "trees", 1: "vegetation", 2: "soil"}
 
 
-def _stats(source: str, name: str, mask: np.ndarray, ndvi: np.ndarray, re_slope: np.ndarray) -> dict:
+def _stats(source, name, mask, ndvi, re_slope) -> dict:
     return {
         "source": source,
         "class": name,
@@ -41,9 +38,13 @@ def _stats(source: str, name: str, mask: np.ndarray, ndvi: np.ndarray, re_slope:
 
 
 def main() -> None:
-    OUTPUTS_DIR.mkdir(parents=True, exist_ok=True)
+    scene = resolve_scene(project_dir_of(__file__))
+    outputs = scene.outputs_dir
+    outputs.mkdir(parents=True, exist_ok=True)
+    kmeans_tif = outputs / "kmeans_clusters_K5.tif"
+    sam_tif = outputs / "sam_fullscene_class.tif"
 
-    with rasterio.open(ACTIVE_WYVERN_FILE) as ds:
+    with rasterio.open(scene.reflectance) as ds:
         red = io.read_band_nm(ds, NM_RED)
         red_edge = io.read_band_nm(ds, NM_RED_EDGE)
         nir = io.read_band_nm(ds, NM_NIR)
@@ -51,9 +52,9 @@ def main() -> None:
     ndvi = indices.ndvi(nir, red)
     re_slope = indices.red_edge_slope(red_edge, red, NM_RED_EDGE, NM_RED)
 
-    with rasterio.open(KMEANS_TIF) as ds:
+    with rasterio.open(kmeans_tif) as ds:
         km = ds.read(1)
-    with rasterio.open(SAM_TIF) as ds:
+    with rasterio.open(sam_tif) as ds:
         sam = ds.read(1)
 
     results = []
@@ -66,7 +67,7 @@ def main() -> None:
         if m.sum() >= MIN_PIXELS:
             results.append(_stats("sam", name, m, ndvi, re_slope))
 
-    out_csv = OUTPUTS_DIR / "spectral_index_stats.csv"
+    out_csv = outputs / "spectral_index_stats.csv"
     pd.DataFrame(results).to_csv(out_csv, index=False)
     print("Wrote:", out_csv)
 
@@ -88,7 +89,7 @@ def main() -> None:
         ax.set_xticklabels(labels)
 
     fig.tight_layout()
-    out_png = OUTPUTS_DIR / "spectral_indices_kmeans.png"
+    out_png = outputs / "spectral_indices_kmeans.png"
     fig.savefig(out_png, dpi=200)
     plt.close(fig)
     print("Wrote:", out_png)

@@ -1,84 +1,73 @@
+"""Filesystem layout helpers. Pure functions — no work at import; fail fast when called."""
+from __future__ import annotations
+
+from dataclasses import dataclass
 from pathlib import Path
-import sys
-
-# This file lives in: src/wyvernhsi/paths.py
-# Repo layout:
-#   wyvern-hsi-labs/
-#     src/wyvernhsi/paths.py
-#     projects/<project_name>/scripts/*.py
-
-REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
-def find_active_project_dir() -> Path:
-    """
-    Infer active project from script execution path.
-    Works when running:
-      python projects/<project>/scripts/script.py
-    """
-
-    # Absolute path of the running script
-    script_path = Path(sys.argv[0]).resolve()
-
-    # Walk up until we find ".../projects/<name>"
-    for parent in script_path.parents:
-        if parent.name == "projects":
-            # Next element up is repo root — not what we want
-            continue
-
-        if parent.parent.name == "projects":
-            return parent
-
-    raise RuntimeError(
-        "Could not determine active project directory. "
-        "Run scripts from: projects/<project_name>/scripts/"
-    )
+def repo_root() -> Path:
+    """Repo root, from this file's location (src/wyvernhsi/paths.py)."""
+    return Path(__file__).resolve().parents[2]
 
 
-PROJECT_DIR = find_active_project_dir()
+def project_dir_of(script_file: str) -> Path:
+    """The projects/<name> dir a script under projects/<name>/scripts/ belongs to."""
+    return Path(script_file).resolve().parents[1]
 
-DATA_DIR = PROJECT_DIR / "data"
-OUTPUTS_DIR = PROJECT_DIR / "outputs"
+
+@dataclass(frozen=True)
+class ScenePaths:
+    project_dir: Path
+    data_dir: Path
+    outputs_dir: Path
+    radiance: Path
+    reflectance: Path
+    mask: Path
 
 
-# ------------------------
-# Automatic dataset selection
-# ------------------------
-
-def find_wyvern_scene(data_dir: Path) -> Path:
-    """
-    Returns the first GeoTIFF that is NOT a data_mask.
-    Enforces exactly one active scene per project folder.
-    """
-
+def find_radiance_scene(data_dir: Path) -> Path:
+    """The single raw Wyvern scene in data_dir (not a mask, not a derived reflectance)."""
     tiffs = sorted(data_dir.glob("*.tif*"))
-
-    scene_files = [
+    scenes = [
         p for p in tiffs
-        if not p.name.endswith("_data_mask.tiff")
+        if not p.name.endswith(("_data_mask.tiff", "_data_mask.tif"))
+        and "_toa_reflectance" not in p.stem
     ]
-
-    if len(scene_files) == 0:
+    if not scenes:
         raise FileNotFoundError(
-            f"No Wyvern scene found in {data_dir} "
-            "(expected *.tif not ending with _data_mask.tiff)"
+            f"No raw Wyvern scene in {data_dir} "
+            "(expected a *.tif that is not *_data_mask and not *_toa_reflectance)."
         )
-
-    if len(scene_files) > 1:
+    if len(scenes) > 1:
         raise RuntimeError(
-            f"Multiple Wyvern scenes found in {data_dir}. "
-            "Keep exactly one active scene per project."
+            f"Multiple raw scenes in {data_dir}; keep exactly one active scene per project."
+        )
+    return scenes[0]
+
+
+def resolve_scene(project_dir: Path, *, require_reflectance: bool = True) -> ScenePaths:
+    """
+    Resolve all scene paths for a project, raising immediately if required inputs are missing.
+    Conversion stages that *produce* the reflectance pass require_reflectance=False.
+    """
+    data_dir = project_dir / "data"
+    radiance = find_radiance_scene(data_dir)  # exists (globbed)
+    reflectance = data_dir / "derived" / f"{radiance.stem}_toa_reflectance.tif"
+    mask = data_dir / f"{radiance.stem}_data_mask.tiff"
+
+    if not mask.exists():
+        raise FileNotFoundError(f"Data mask not found: {mask}")
+    if require_reflectance and not reflectance.exists():
+        raise FileNotFoundError(
+            f"Derived TOA reflectance not found: {reflectance}\n"
+            "Run the TOA reflectance conversion stage first."
         )
 
-    return scene_files[0]
-
-
-ACTIVE_WYVERN_FILE = find_wyvern_scene(DATA_DIR)
-ACTIVE_WYVERN_MASK = DATA_DIR / (ACTIVE_WYVERN_FILE.stem + "_data_mask.tiff")
-
-
-# Optional sanity check
-if not ACTIVE_WYVERN_MASK.exists():
-    raise FileNotFoundError(
-        f"Expected mask not found:\n{ACTIVE_WYVERN_MASK}"
+    return ScenePaths(
+        project_dir=project_dir,
+        data_dir=data_dir,
+        outputs_dir=project_dir / "outputs",
+        radiance=radiance,
+        reflectance=reflectance,
+        mask=mask,
     )

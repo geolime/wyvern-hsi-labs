@@ -18,7 +18,7 @@ from rasterio.windows import Window
 
 from wyvernhsi import clustering, io
 from wyvernhsi.masks import load_valid_mask
-from wyvernhsi.paths import ACTIVE_WYVERN_FILE, ACTIVE_WYVERN_MASK, OUTPUTS_DIR
+from wyvernhsi.paths import project_dir_of, resolve_scene
 from wyvernhsi.wavelengths import parse_wavelengths_nm_from_descriptions
 
 # ---------- Settings ----------
@@ -82,14 +82,13 @@ def plot_cluster_spectra(means, counts, wl_nm, out_png) -> None:
 
 
 def main() -> None:
-    if not ACTIVE_WYVERN_FILE.exists():
-        raise FileNotFoundError(f"Missing local file: {ACTIVE_WYVERN_FILE}")
-    OUTPUTS_DIR.mkdir(parents=True, exist_ok=True)
-    out_tif = OUTPUTS_DIR / f"kmeans_clusters_K{K}.tif"
+    scene = resolve_scene(project_dir_of(__file__))
+    scene.outputs_dir.mkdir(parents=True, exist_ok=True)
+    out_tif = scene.outputs_dir / f"kmeans_clusters_K{K}.tif"
 
-    valid_full = load_valid_mask(ACTIVE_WYVERN_MASK)
+    valid_full = load_valid_mask(scene.mask)
 
-    with rasterio.open(ACTIVE_WYVERN_FILE) as ds:
+    with rasterio.open(scene.reflectance) as ds:
         wl_nm = parse_wavelengths_nm_from_descriptions(list(ds.descriptions))
         win = subset_window(ds)
         print("Mode:", "FULL SCENE" if win is None else
@@ -138,19 +137,19 @@ def main() -> None:
     plt.axis("off")
     plt.title(f"KMeans clusters (K={K})")
     plt.tight_layout()
-    out_png = OUTPUTS_DIR / f"kmeans_clusters_K{K}.png"
+    out_png = scene.outputs_dir / f"kmeans_clusters_K{K}.png"
     plt.savefig(out_png, dpi=200)
     plt.close()
     print("Wrote:", out_png)
 
     # Cluster mean spectra (second streaming pass)
-    with rasterio.open(ACTIVE_WYVERN_FILE) as ds, rasterio.open(out_tif) as lab_ds:
+    with rasterio.open(scene.reflectance) as ds, rasterio.open(out_tif) as lab_ds:
         tiles = (
             (io.read_cube(ds, window=w), lab_ds.read(1, window=w).astype(np.int16))
             for w in io.iter_windows(ds, TILE_SIZE, window=win)
         )
         means, counts = clustering.cluster_mean_spectra(tiles, k=K, n_bands=ds.count, normalize=True)
-    plot_cluster_spectra(means, counts, wl_nm, OUTPUTS_DIR / f"kmeans_cluster_spectra_K{K}.png")
+    plot_cluster_spectra(means, counts, wl_nm, scene.outputs_dir / f"kmeans_cluster_spectra_K{K}.png")
 
 
 if __name__ == "__main__":

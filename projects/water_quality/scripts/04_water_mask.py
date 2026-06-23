@@ -13,15 +13,13 @@ Outputs (outputs/masks/):
 """
 from __future__ import annotations
 
-from pathlib import Path
-
 import numpy as np
 import rasterio
 from scipy.ndimage import binary_opening, binary_closing, label
 
 from wyvernhsi import indices, io, visualization
 from wyvernhsi.masks import load_valid_mask
-from wyvernhsi.paths import ACTIVE_WYVERN_FILE, ACTIVE_WYVERN_MASK, OUTPUTS_DIR
+from wyvernhsi.paths import project_dir_of, resolve_scene
 
 # Target wavelengths (nm) — resolved to nearest band, not hardcoded indices
 NM_GREEN, NM_RED, NM_NIR = 549.0, 660.0, 764.0
@@ -34,11 +32,12 @@ NDVI_MAX = 0.10  # lower  => stricter vegetation rejection
 
 
 def main() -> None:
-    img_path = Path(ACTIVE_WYVERN_FILE)
-    out_dir = OUTPUTS_DIR / "masks"
+    scene = resolve_scene(project_dir_of(__file__))
+    img_path = scene.reflectance
+    out_dir = scene.outputs_dir / "masks"
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    valid_mask = load_valid_mask(ACTIVE_WYVERN_MASK)  # True = clear & not cloud/haze/shadow
+    valid_mask = load_valid_mask(scene.mask)  # True = clear & not cloud/haze/shadow
 
     with rasterio.open(img_path) as ds:
         profile = ds.profile
