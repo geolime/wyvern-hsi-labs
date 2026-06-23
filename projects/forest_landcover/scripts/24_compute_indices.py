@@ -1,125 +1,96 @@
+"""
+Spectral-index separability of KMeans clusters and SAM classes.
+
+Computes NDVI and red-edge slope, then summarises each class's index distribution
+to a CSV and a boxplot figure for the README.
+
+Inputs:  ACTIVE_WYVERN_FILE (TOA reflectance), kmeans_clusters_K5.tif, sam_fullscene_class.tif
+Outputs: spectral_index_stats.csv, spectral_indices_kmeans.png
+"""
+from __future__ import annotations
+
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import rasterio
-import matplotlib.pyplot as plt
 
+from wyvernhsi import indices, io
 from wyvernhsi.paths import ACTIVE_WYVERN_FILE, OUTPUTS_DIR
-from wyvernhsi.wavelengths import parse_wavelengths_nm_from_descriptions, pick_band_index_nearest
-
 
 KMEANS_TIF = OUTPUTS_DIR / "kmeans_clusters_K5.tif"
-SAM_TIF    = OUTPUTS_DIR / "sam_fullscene_class.tif"
+SAM_TIF = OUTPUTS_DIR / "sam_fullscene_class.tif"
+
+NM_RED, NM_RED_EDGE, NM_NIR = 660.0, 720.0, 800.0
+N_CLUSTERS = 5
+MIN_PIXELS = 1000
+SAM_NAMES = {0: "trees", 1: "vegetation", 2: "soil"}
 
 
-def main():
+def _stats(source: str, name: str, mask: np.ndarray, ndvi: np.ndarray, re_slope: np.ndarray) -> dict:
+    return {
+        "source": source,
+        "class": name,
+        "ndvi_mean": float(np.nanmean(ndvi[mask])),
+        "ndvi_std": float(np.nanstd(ndvi[mask])),
+        "re_slope_mean": float(np.nanmean(re_slope[mask])),
+        "re_slope_std": float(np.nanstd(re_slope[mask])),
+        "count": int(mask.sum()),
+    }
+
+
+def main() -> None:
     OUTPUTS_DIR.mkdir(parents=True, exist_ok=True)
 
     with rasterio.open(ACTIVE_WYVERN_FILE) as ds:
-        wl = parse_wavelengths_nm_from_descriptions(list(ds.descriptions))
+        red = io.read_band_nm(ds, NM_RED)
+        red_edge = io.read_band_nm(ds, NM_RED_EDGE)
+        nir = io.read_band_nm(ds, NM_NIR)
 
-        b_red  = pick_band_index_nearest(wl, 660) + 1
-        b_re   = pick_band_index_nearest(wl, 720) + 1
-        b_nir  = pick_band_index_nearest(wl, 800) + 1
+    ndvi = indices.ndvi(nir, red)
+    re_slope = indices.red_edge_slope(red_edge, red, NM_RED_EDGE, NM_RED)
 
-        red = ds.read(b_red).astype(np.float32)
-        re  = ds.read(b_re).astype(np.float32)
-        nir = ds.read(b_nir).astype(np.float32)
-
-    # Indices
-    ndvi = (nir - red) / (nir + red + 1e-6)
-    re_slope = (re - red) / (720 - 660)
-
-    # Load classifications
     with rasterio.open(KMEANS_TIF) as ds:
         km = ds.read(1)
-
     with rasterio.open(SAM_TIF) as ds:
         sam = ds.read(1)
 
     results = []
+    for k in range(N_CLUSTERS):
+        m = km == k
+        if m.sum() >= MIN_PIXELS:
+            results.append(_stats("kmeans", f"cluster_{k}", m, ndvi, re_slope))
+    for k, name in SAM_NAMES.items():
+        m = sam == k
+        if m.sum() >= MIN_PIXELS:
+            results.append(_stats("sam", name, m, ndvi, re_slope))
 
-    # ----- KMeans stats -----
-    for k in range(5):
-        m = (km == k)
-        if m.sum() < 1000:
-            continue
-
-        results.append({
-            "source": "kmeans",
-            "class": f"cluster_{k}",
-            "ndvi_mean": float(np.nanmean(ndvi[m])),
-            "ndvi_std": float(np.nanstd(ndvi[m])),
-            "re_slope_mean": float(np.nanmean(re_slope[m])),
-            "re_slope_std": float(np.nanstd(re_slope[m])),
-            "count": int(m.sum())
-        })
-
-    # ----- SAM stats -----
-    sam_names = {
-        0: "trees",
-        1: "vegetation",
-        2: "soil"
-    }
-
-    for k, name in sam_names.items():
-        m = (sam == k)
-        if m.sum() < 1000:
-            continue
-
-        results.append({
-            "source": "sam",
-            "class": name,
-            "ndvi_mean": float(np.nanmean(ndvi[m])),
-            "ndvi_std": float(np.nanstd(ndvi[m])),
-            "re_slope_mean": float(np.nanmean(re_slope[m])),
-            "re_slope_std": float(np.nanstd(re_slope[m])),
-            "count": int(m.sum())
-        })
-
-    df = pd.DataFrame(results)
     out_csv = OUTPUTS_DIR / "spectral_index_stats.csv"
-    df.to_csv(out_csv, index=False)
-
+    pd.DataFrame(results).to_csv(out_csv, index=False)
     print("Wrote:", out_csv)
 
-    # ----- Boxplots (nice for README) -----
-    plt.figure(figsize=(12, 5))
+    fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+    for ax, values, title in (
+        (axes[0], ndvi, "NDVI by KMeans cluster"),
+        (axes[1], re_slope, "Red-edge slope by KMeans cluster"),
+    ):
+        data, labels = [], []
+        for k in range(N_CLUSTERS):
+            m = km == k
+            if m.sum() > MIN_PIXELS:
+                vals = values[m]
+                data.append(vals[np.isfinite(vals)])
+                labels.append(f"K{k}")
+        ax.boxplot(data, showfliers=False)
+        ax.set_title(title)
+        ax.set_xticks(range(1, len(labels) + 1))
+        ax.set_xticklabels(labels)
 
-    # NDVI boxplot
-    plt.subplot(1, 2, 1)
-    data = []
-    labels = []
-
-    for k in range(5):
-        m = (km == k)
-        if m.sum() > 1000:
-            data.append(ndvi[m])
-            labels.append(f"K{k}")
-
-    plt.boxplot(data, showfliers=False)
-    plt.title("NDVI by KMeans cluster")
-    plt.xticks(range(1, len(labels) + 1), labels)
-
-    # Red-edge slope boxplot
-    plt.subplot(1, 2, 2)
-    data = []
-    labels = []
-
-    for k in range(5):
-        m = (km == k)
-        if m.sum() > 1000:
-            data.append(re_slope[m])
-            labels.append(f"K{k}")
-
-    plt.boxplot(data, showfliers=False)
-    plt.title("Red-edge slope by KMeans cluster")
-    plt.xticks(range(1, len(labels) + 1), labels)
-
-    plt.tight_layout()
+    fig.tight_layout()
     out_png = OUTPUTS_DIR / "spectral_indices_kmeans.png"
-    plt.savefig(out_png, dpi=200)
-    plt.close()
-
+    fig.savefig(out_png, dpi=200)
+    plt.close(fig)
     print("Wrote:", out_png)
 
 

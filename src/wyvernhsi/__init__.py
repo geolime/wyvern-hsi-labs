@@ -3,6 +3,6 @@ from __future__ import annotations
 
 __version__ = "0.1.0"
 
-from wyvernhsi import indices, io, visualization, wavelengths
+from wyvernhsi import indices, io, radiometry, stac, visualization, wavelengths
 
-__all__ = ["indices", "io", "visualization", "wavelengths", "__version__"]
+__all__ = ["indices", "io", "radiometry", "stac", "visualization", "wavelengths", "__version__"]
