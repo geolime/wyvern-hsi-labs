@@ -1,0 +1,20 @@
+project:
+  name: water_quality
+  random_seed: 42
+
+pipeline:
+  stages:
+    - 02_convert_to_toa_reflectance.py
+    - 04_water_mask.py
+
+masking:
+  green_nm: 549.0
+  red_nm: 660.0
+  nir_nm: 764.0
+  rgb_nm: [660.0, 549.0, 510.0]
+  ndwi_min: 0.15
+  ndvi_max: 0.10
+  nir_percentile: 35.0
+  red_percentile: 55.0
+  percentile_lo: 2.0
+  percentile_hi: 98.0

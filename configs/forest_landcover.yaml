@@ -1,0 +1,39 @@
+project:
+  name: forest_landcover
+  random_seed: 42
+
+pipeline:
+  stages:
+    - 01_convert_to_toa_reflectance.py
+    - 15_unsupervised_kmeans.py
+    - 24_compute_indices.py
+
+clustering:
+  k: 5
+  pca_components: 8
+  n_samples: 50000
+  tile_size: 512
+  use_subset: true
+  subset_pad: 1200
+  subset_points:
+    - [896, 2163]
+    - [313, 3065]
+    - [1043, 3477]
+    - [3745, 2629]
+    - [3309, 3839]
+    - [3856, 3127]
+    - [3598, 3219]
+    - [239, 3999]
+    - [3966, 3200]
+    - [4378, 3489]
+    - [3690, 2789]
+    - [4421, 2838]
+    - [1350, 640]
+    - [3101, 1229]
+    - [2536, 1352]
+
+features:
+  red_nm: 660.0
+  red_edge_nm: 720.0
+  nir_nm: 800.0
+  min_pixels: 1000

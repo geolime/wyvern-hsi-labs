@@ -7,6 +7,10 @@ Method:
 - NIR-darkness and Red constraints, then morphological cleanup, then keep the two
   largest connected water bodies.
 
+Water-only mask (visible + NIR; no SWIR). QA clear-mask -> NDWI/NDVI thresholds ->
+NIR-darkness/Red cutoffs -> morphology -> keep the two largest water bodies.
+Outputs under outputs/masks/.
+
 Outputs (outputs/masks/):
 - water_mask_raw.png, rgb_water_only_raw.png   (pre-morphology previews)
 - water_mask.png, rgb_water_only.png, water_mask.tif
@@ -18,33 +22,25 @@ import rasterio
 from scipy.ndimage import binary_opening, binary_closing, label
 
 from wyvernhsi import indices, io, visualization
+from wyvernhsi.config import Config, load_config
 from wyvernhsi.masks import load_valid_mask
-from wyvernhsi.paths import project_dir_of, resolve_scene
-
-# Target wavelengths (nm) — resolved to nearest band, not hardcoded indices
-NM_GREEN, NM_RED, NM_NIR = 549.0, 660.0, 764.0
-NM_RGB = (660.0, 549.0, 510.0)  # R, G, B preview
-P_LO, P_HI = 2.0, 98.0
-
-# Water-mask thresholds (heuristic; tune per scene)
-NDWI_MIN = 0.15  # higher => stricter water-only
-NDVI_MAX = 0.10  # lower  => stricter vegetation rejection
+from wyvernhsi.paths import project_dir_of, repo_root, resolve_scene
 
 
-def main() -> None:
-    scene = resolve_scene(project_dir_of(__file__))
-    img_path = scene.reflectance
+def main(config: Config) -> None:
+    m = config.masking
+    scene = resolve_scene(config.project_dir)
     out_dir = scene.outputs_dir / "masks"
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    valid_mask = load_valid_mask(scene.mask)  # True = clear & not cloud/haze/shadow
+    valid_mask = load_valid_mask(scene.mask)
 
-    with rasterio.open(img_path) as ds:
+    with rasterio.open(scene.reflectance) as ds:
         profile = ds.profile
-        green = io.read_band_nm(ds, NM_GREEN)
-        red = io.read_band_nm(ds, NM_RED)
-        nir = io.read_band_nm(ds, NM_NIR)
-        rgb = np.dstack([io.read_band_nm(ds, nm) for nm in NM_RGB]).astype(np.float32)
+        green = io.read_band_nm(ds, m.green_nm)
+        red = io.read_band_nm(ds, m.red_nm)
+        nir = io.read_band_nm(ds, m.nir_nm)
+        rgb = np.dstack([io.read_band_nm(ds, nm) for nm in m.rgb_nm]).astype(np.float32)
 
     for arr in (green, red, nir):
         arr[~valid_mask] = np.nan
@@ -55,41 +51,38 @@ def main() -> None:
     nir_valid = nir[np.isfinite(nir)]
     if nir_valid.size == 0:
         raise RuntimeError("No valid pixels after QA mask.")
-    nir_p = np.percentile(nir_valid, 35.0)
-    red_p = np.percentile(red[np.isfinite(red)], 55.0)
+    nir_p = np.percentile(nir_valid, m.nir_percentile)
+    red_p = np.percentile(red[np.isfinite(red)], m.red_percentile)
 
     water_mask_raw = (
-        np.isfinite(ndwi) & (ndwi >= NDWI_MIN)
-        & np.isfinite(ndvi) & (ndvi <= NDVI_MAX)
+        np.isfinite(ndwi) & (ndwi >= m.ndwi_min)
+        & np.isfinite(ndvi) & (ndvi <= m.ndvi_max)
         & np.isfinite(nir) & (nir <= nir_p)
         & (red <= red_p)
     )
 
-    # Pre-morphology previews
+    lo, hi = m.percentile_lo, m.percentile_hi
     visualization.save_png(out_dir / "water_mask_raw.png", water_mask_raw.astype(np.uint8) * 255)
     rgb_raw = rgb.copy()
     rgb_raw[~valid_mask, :] = np.nan
     rgb_raw[~water_mask_raw, :] = np.nan
-    visualization.save_png(out_dir / "rgb_water_only_raw.png", visualization.stretch_rgb(rgb_raw, P_LO, P_HI))
+    visualization.save_png(out_dir / "rgb_water_only_raw.png", visualization.stretch_rgb(rgb_raw, lo, hi))
 
-    # Morphological cleanup
-    water_mask = binary_opening(water_mask_raw, structure=np.ones((3, 3)))  # drop thin features
-    water_mask = binary_closing(water_mask, structure=np.ones((3, 3)))      # fill small holes
+    water_mask = binary_opening(water_mask_raw, structure=np.ones((3, 3)))
+    water_mask = binary_closing(water_mask, structure=np.ones((3, 3)))
 
-    # Keep the two largest connected water bodies
     lbl, n = label(water_mask)
     if n > 0:
         sizes = np.bincount(lbl.ravel())
-        sizes[0] = 0  # ignore background
+        sizes[0] = 0
         keep_labels = np.argsort(sizes)[-2:]
         water_mask = np.isin(lbl, keep_labels)
 
-    # Final previews + GeoTIFF
     visualization.save_png(out_dir / "water_mask.png", water_mask.astype(np.uint8) * 255)
     rgb_final = rgb.copy()
     rgb_final[~valid_mask, :] = np.nan
     rgb_final[~water_mask, :] = np.nan
-    visualization.save_png(out_dir / "rgb_water_only.png", visualization.stretch_rgb(rgb_final, P_LO, P_HI))
+    visualization.save_png(out_dir / "rgb_water_only.png", visualization.stretch_rgb(rgb_final, lo, hi))
 
     io.write_geotiff(
         profile, out_dir / "water_mask.tif", water_mask.astype(np.uint8),
@@ -100,8 +93,7 @@ def main() -> None:
     print(f"  water pixels: {water_mask.sum():,}")
     print(f"  valid pixels: {valid_mask.sum():,}")
     print(f"  water share of valid: {water_mask.sum() / max(valid_mask.sum(), 1):.3f}")
-    print("Wrote:", out_dir / "water_mask.tif", out_dir / "water_mask.png", out_dir / "rgb_water_only.png")
 
 
 if __name__ == "__main__":
-    main()
+    main(load_config(repo_root() / "configs" / f"{project_dir_of(__file__).name}.yaml"))

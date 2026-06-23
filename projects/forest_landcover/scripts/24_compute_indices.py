@@ -4,6 +4,8 @@ Spectral-index separability of KMeans clusters and SAM classes.
 Computes NDVI and red-edge slope, then summarises each class's index distribution
 to a CSV and a boxplot figure for the README.
 
+Spectral-index separability of KMeans clusters and SAM classes (NDVI, red-edge slope).
+
 Inputs:  reflectance, kmeans_clusters_K5.tif, sam_fullscene_class.tif
 Outputs: spectral_index_stats.csv, spectral_indices_kmeans.png
 """
@@ -17,11 +19,9 @@ import pandas as pd
 import rasterio
 
 from wyvernhsi import indices, io
-from wyvernhsi.paths import project_dir_of, resolve_scene
+from wyvernhsi.config import Config, load_config
+from wyvernhsi.paths import project_dir_of, repo_root, resolve_scene
 
-NM_RED, NM_RED_EDGE, NM_NIR = 660.0, 720.0, 800.0
-N_CLUSTERS = 5
-MIN_PIXELS = 1000
 SAM_NAMES = {0: "trees", 1: "vegetation", 2: "soil"}
 
 
@@ -37,20 +37,22 @@ def _stats(source, name, mask, ndvi, re_slope) -> dict:
     }
 
 
-def main() -> None:
-    scene = resolve_scene(project_dir_of(__file__))
+def main(config: Config) -> None:
+    f = config.features
+    k_clusters = config.clustering.k
+    scene = resolve_scene(config.project_dir)
     outputs = scene.outputs_dir
     outputs.mkdir(parents=True, exist_ok=True)
-    kmeans_tif = outputs / "kmeans_clusters_K5.tif"
+    kmeans_tif = outputs / f"kmeans_clusters_K{k_clusters}.tif"
     sam_tif = outputs / "sam_fullscene_class.tif"
 
     with rasterio.open(scene.reflectance) as ds:
-        red = io.read_band_nm(ds, NM_RED)
-        red_edge = io.read_band_nm(ds, NM_RED_EDGE)
-        nir = io.read_band_nm(ds, NM_NIR)
+        red = io.read_band_nm(ds, f.red_nm)
+        red_edge = io.read_band_nm(ds, f.red_edge_nm)
+        nir = io.read_band_nm(ds, f.nir_nm)
 
     ndvi = indices.ndvi(nir, red)
-    re_slope = indices.red_edge_slope(red_edge, red, NM_RED_EDGE, NM_RED)
+    re_slope = indices.red_edge_slope(red_edge, red, f.red_edge_nm, f.red_nm)
 
     with rasterio.open(kmeans_tif) as ds:
         km = ds.read(1)
@@ -58,14 +60,14 @@ def main() -> None:
         sam = ds.read(1)
 
     results = []
-    for k in range(N_CLUSTERS):
-        m = km == k
-        if m.sum() >= MIN_PIXELS:
-            results.append(_stats("kmeans", f"cluster_{k}", m, ndvi, re_slope))
-    for k, name in SAM_NAMES.items():
-        m = sam == k
-        if m.sum() >= MIN_PIXELS:
-            results.append(_stats("sam", name, m, ndvi, re_slope))
+    for kk in range(k_clusters):
+        msk = km == kk
+        if msk.sum() >= f.min_pixels:
+            results.append(_stats("kmeans", f"cluster_{kk}", msk, ndvi, re_slope))
+    for kk, name in SAM_NAMES.items():
+        msk = sam == kk
+        if msk.sum() >= f.min_pixels:
+            results.append(_stats("sam", name, msk, ndvi, re_slope))
 
     out_csv = outputs / "spectral_index_stats.csv"
     pd.DataFrame(results).to_csv(out_csv, index=False)
@@ -77,12 +79,12 @@ def main() -> None:
         (axes[1], re_slope, "Red-edge slope by KMeans cluster"),
     ):
         data, labels = [], []
-        for k in range(N_CLUSTERS):
-            m = km == k
-            if m.sum() > MIN_PIXELS:
-                vals = values[m]
+        for kk in range(k_clusters):
+            msk = km == kk
+            if msk.sum() > f.min_pixels:
+                vals = values[msk]
                 data.append(vals[np.isfinite(vals)])
-                labels.append(f"K{k}")
+                labels.append(f"K{kk}")
         ax.boxplot(data, showfliers=False)
         ax.set_title(title)
         ax.set_xticks(range(1, len(labels) + 1))
@@ -96,4 +98,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    main(load_config(repo_root() / "configs" / f"{project_dir_of(__file__).name}.yaml"))

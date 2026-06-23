@@ -3,7 +3,8 @@ from pathlib import Path
 
 import rasterio
 
-from wyvernhsi.paths import project_dir_of, resolve_scene
+from wyvernhsi.config import Config, load_config
+from wyvernhsi.paths import project_dir_of, repo_root, resolve_scene
 from wyvernhsi.radiometry import (
     replace_nodata_with_nan,
     sun_earth_distance_au,
@@ -42,8 +43,8 @@ def find_stac_item_json(image_path: Path) -> Path:
     )
 
 
-def main() -> None:
-    scene = resolve_scene(project_dir_of(__file__), require_reflectance=False)
+def main(config: Config) -> None:
+    scene = resolve_scene(config.project_dir, require_reflectance=False)
     image_path = scene.radiance
 
     stac_json = find_stac_item_json(image_path)
@@ -103,4 +104,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    main(load_config(repo_root() / "configs" / f"{project_dir_of(__file__).name}.yaml"))
