@@ -6,6 +6,7 @@ pipeline:
   stages:
     - 01_convert_to_toa_reflectance.py
     - 15_unsupervised_kmeans.py
+    - 12_sam_fullscene_geotiff.py
     - 24_compute_indices.py
 
 clustering:
@@ -37,3 +38,27 @@ features:
   red_edge_nm: 720.0
   nir_nm: 800.0
   min_pixels: 1000
+
+sam:
+  angle_threshold_rad: 0.10
+  roi_half_size_px: 12
+  tile_size: 512
+  reference_classes:
+    dense_trees:
+      - [896, 2163]
+      - [313, 3065]
+      - [1043, 3477]
+      - [3745, 2629]
+      - [3309, 3839]
+    bright_veg:
+      - [3856, 3127]
+      - [3598, 3219]
+      - [239, 3999]
+      - [3966, 3200]
+      - [4378, 3489]
+    low_veg_soil:
+      - [3690, 2789]
+      - [4421, 2838]
+      - [1350, 640]
+      - [3101, 1229]
+      - [2536, 1352]

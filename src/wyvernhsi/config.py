@@ -42,6 +42,13 @@ class MaskingCfg:
     percentile_lo: float
     percentile_hi: float
 
+@dataclass(frozen=True)
+class SamCfg:
+    angle_threshold_rad: float
+    roi_half_size_px: int
+    tile_size: int
+    reference_classes: dict
+
 
 @dataclass(frozen=True)
 class Config:
@@ -49,9 +56,10 @@ class Config:
     project_dir: Path
     random_seed: int
     stages: list
-    clustering: Optional[ClusteringCfg]
-    features: Optional[FeaturesCfg]
-    masking: Optional[MaskingCfg]
+    clustering: Optional[ClusteringCfg] = None
+    features: Optional[FeaturesCfg] = None
+    masking: Optional[MaskingCfg] = None
+    sam: Optional[SamCfg] = None
 
 
 def load_config(path) -> Config:
@@ -66,4 +74,5 @@ def load_config(path) -> Config:
         clustering=ClusteringCfg(**raw["clustering"]) if "clustering" in raw else None,
         features=FeaturesCfg(**raw["features"]) if "features" in raw else None,
         masking=MaskingCfg(**raw["masking"]) if "masking" in raw else None,
+        sam=SamCfg(**raw["sam"]) if "sam" in raw else None,
     )
