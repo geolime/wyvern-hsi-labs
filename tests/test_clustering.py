@@ -51,3 +51,11 @@ def test_cluster_mean_spectra():
     np.testing.assert_array_equal(counts, [2, 1])
     np.testing.assert_allclose(means[0], [1, 2, 3])
     np.testing.assert_allclose(means[1], [4, 5, 6])
+
+
+def test_fit_standardized_kmeans():
+    rng = np.random.default_rng(0)
+    X = np.vstack([rng.normal(0, 0.1, (100, 3)), rng.normal(5, 0.1, (100, 3))]).astype(np.float32)
+    fit = clustering.fit_standardized_kmeans(X, k=2, random_state=42)
+    assert fit.labels.shape == (200,) and fit.scaled.shape == (200, 3)
+    assert set(np.unique(fit.labels)) == {0, 1}

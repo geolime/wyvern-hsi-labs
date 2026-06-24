@@ -20,10 +20,8 @@ import numpy as np
 import pandas as pd
 import rasterio
 from matplotlib import colormaps
-from sklearn.cluster import KMeans
-from sklearn.preprocessing import StandardScaler
 
-from wyvernhsi import indices, io, visualization
+from wyvernhsi import clustering, indices, io, visualization
 from wyvernhsi.config import Config, load_config
 from wyvernhsi.logging_setup import configure_logging
 from wyvernhsi.masks import load_valid_mask, load_water_mask
@@ -121,7 +119,7 @@ def main(config: Config) -> None:
         profile = ds.profile
         ndti = indices.ndti(io.read_band_nm(ds, s.ndti_red_nm), io.read_band_nm(ds, s.ndti_green_nm))
         ndci = indices.ndci(io.read_band_nm(ds, s.ndci_red_edge_nm), io.read_band_nm(ds, s.ndci_red_nm))
-        nirred = indices.nir_red(io.read_band_nm(ds, s.nir_red_nir_nm), io.read_band_nm(ds, s.nir_red_red_nm))
+        nirred = indices.ratio(io.read_band_nm(ds, s.nir_red_nir_nm), io.read_band_nm(ds, s.nir_red_red_nm))
         rgb = visualization.stretch_rgb(io.read_composite(ds, s.rgb_nm), P_LO, P_HI)
         ngb = visualization.stretch_rgb(io.read_composite(ds, s.ngb_nm), P_LO, P_HI)
 
@@ -133,8 +131,7 @@ def main(config: Config) -> None:
     if X.shape[0] == 0:
         raise RuntimeError("No valid water pixels for SFA KMeans.")
 
-    Xs = StandardScaler().fit_transform(X)
-    y = KMeans(n_clusters=k, n_init="auto", random_state=seed).fit_predict(Xs).astype(np.int16)
+    y = clustering.fit_standardized_kmeans(X, k=k, random_state=seed).labels
 
     lab = np.full(ndti.shape, -1, dtype=np.int16)
     lab[ok] = y

@@ -37,9 +37,9 @@ def red_edge_slope(
     out[ok] = (red_edge[ok] - red[ok]) / (red_edge_nm - red_nm)
     return out
 
-def nir_red(nir: np.ndarray, red: np.ndarray) -> np.ndarray:
-    """NIR / Red ratio (red-edge strength proxy); NaN where inputs are NaN or red ~ 0."""
-    out = np.full(nir.shape, np.nan, dtype=np.float32)
-    ok = np.isfinite(nir) & np.isfinite(red) & (np.abs(red) > 1e-10)
-    out[ok] = nir[ok] / red[ok]
+def ratio(a: np.ndarray, b: np.ndarray) -> np.ndarray:
+    """Safe band ratio a / b; NaN where inputs are NaN or b ~ 0."""
+    out = np.full(a.shape, np.nan, dtype=np.float32)
+    ok = np.isfinite(a) & np.isfinite(b) & (np.abs(b) > 1e-10)
+    out[ok] = a[ok] / b[ok]
     return out

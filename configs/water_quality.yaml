@@ -7,6 +7,7 @@ pipeline:
     - 02_convert_to_toa_reflectance.py
     - 04_water_mask.py
     - 05_pca_kmeans_water.py
+    - 06_kmeans_water_features.py
     - 10_sfa_kmeans_water_classes.py
     - 11_proxy_map_ndti_ndci.py
 

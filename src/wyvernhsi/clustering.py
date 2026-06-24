@@ -5,10 +5,28 @@ from dataclasses import dataclass
 from typing import Iterable
 
 import numpy as np
+from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 from sklearn.metrics import adjusted_rand_score
 
+@dataclass
+class StandardKmeansFit:
+    scaler: StandardScaler
+    kmeans: KMeans
+    labels: np.ndarray
+    scaled: np.ndarray
+
+
+def fit_standardized_kmeans(X: np.ndarray, *, k: int, random_state: int) -> StandardKmeansFit:
+    """StandardScaler + KMeans on engineered features (no PCA). Fits on all of X."""
+    if X.shape[0] == 0:
+        raise ValueError("No valid pixels to fit on.")
+    scaler = StandardScaler()
+    Xs = scaler.fit_transform(X)
+    kmeans = KMeans(n_clusters=k, n_init="auto", random_state=random_state)
+    labels = kmeans.fit_predict(Xs).astype(np.int16)
+    return StandardKmeansFit(scaler=scaler, kmeans=kmeans, labels=labels, scaled=Xs)
 
 @dataclass
 class PcaKmeansFit:
