@@ -26,3 +26,7 @@ def test_red_edge_slope():
     out = indices.red_edge_slope(np.array([0.5]), np.array([0.3]), 720.0, 660.0)
     assert np.isclose(out[0], 0.2 / 60.0, atol=1e-6)
     assert np.isnan(indices.red_edge_slope(np.array([np.nan]), np.array([0.3]), 720.0, 660.0)[0])
+
+def test_nir_red_ratio():
+    out = indices.nir_red(np.array([0.4, 0.5], dtype=np.float32), np.array([0.2, 0.0], dtype=np.float32))
+    assert np.isclose(out[0], 2.0) and np.isnan(out[1])

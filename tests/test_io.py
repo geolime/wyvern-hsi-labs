@@ -43,3 +43,16 @@ def test_write_geotiff_roundtrip(tmp_path, write_raster):
         assert ds.descriptions[0] == "VAL"
         assert ds.crs == profile["crs"]
         np.testing.assert_array_equal(ds.read(1), arr)
+
+def read_composite(ds: rasterio.DatasetReader, nm_list) -> np.ndarray:
+    """Read bands nearest each wavelength as an (H, W, len) float32 stack (nodata -> NaN)."""
+    return np.dstack([io.read_band_nm(ds, nm) for nm in nm_list])
+
+
+def test_read_composite(tmp_path, write_raster):
+    cube = np.stack([np.full((2, 2), v, dtype=np.float32) for v in (1, 2, 3)])
+    p = write_raster(tmp_path / "c.tif", cube, descriptions=["Band_500", "Band_600", "Band_700"])
+    with rasterio.open(p) as ds:
+        comp = io.read_composite(ds, [700, 500])
+    assert comp.shape == (2, 2, 2)
+    assert np.all(comp[:, :, 0] == 3) and np.all(comp[:, :, 1] == 1)

@@ -25,8 +25,7 @@ from wyvernhsi.paths import project_dir_of, repo_root, resolve_scene
 logger = logging.getLogger(__name__)
 
 
-def _ngb_composite(ds, nm_rgb, lo, hi):
-    return np.dstack([visualization.percentile_stretch(io.read_band_nm(ds, nm), lo, hi) for nm in nm_rgb])
+ngb = visualization.stretch_rgb(io.read_composite(ds, p.ngb_nm), p.percentile_lo, p.percentile_hi)
 
 
 def _robust_limits(x, lo=2.0, hi=98.0):

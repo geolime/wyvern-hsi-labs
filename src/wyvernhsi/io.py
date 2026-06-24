@@ -59,6 +59,10 @@ def read_band_nm(ds: rasterio.DatasetReader, target_nm: float) -> np.ndarray:
     """Read the band nearest to target_nm as float32 with NaN nodata."""
     return read_band(ds, band_index_for_nm(ds, target_nm))
 
+def read_composite(ds: rasterio.DatasetReader, nm_list) -> np.ndarray:
+    """Read bands nearest each wavelength as an (H, W, len) float32 stack (nodata -> NaN)."""
+    return np.dstack([read_band_nm(ds, nm) for nm in nm_list])
+
 
 def write_geotiff(
     ref_profile: dict,
