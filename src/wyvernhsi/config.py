@@ -45,6 +45,18 @@ class MaskingCfg:
     percentile_hi: float
 
 @dataclass(frozen=True)
+class ProxiesCfg:
+    ndti_green_nm: float
+    ndti_red_nm: float
+    ndci_red_edge_nm: float
+    ndci_red_nm: float
+    ngb_nm: list
+    percentile_lo: float
+    percentile_hi: float
+    hotspot_top_pct: float
+    n_bins: int
+
+@dataclass(frozen=True)
 class SamCfg:
     angle_threshold_rad: float
     roi_half_size_px: int
@@ -61,6 +73,7 @@ class Config:
     clustering: Optional[ClusteringCfg] = None
     features: Optional[FeaturesCfg] = None
     masking: Optional[MaskingCfg] = None
+    proxies: Optional[ProxiesCfg] = None
     sam: Optional[SamCfg] = None
 
 
@@ -76,5 +89,6 @@ def load_config(path) -> Config:
         clustering=ClusteringCfg(**raw["clustering"]) if "clustering" in raw else None,
         features=FeaturesCfg(**raw["features"]) if "features" in raw else None,
         masking=MaskingCfg(**raw["masking"]) if "masking" in raw else None,
+        proxies=ProxiesCfg(**raw["proxies"]) if "proxies" in raw else None,
         sam=SamCfg(**raw["sam"]) if "sam" in raw else None,
     )

@@ -7,6 +7,7 @@ pipeline:
     - 02_convert_to_toa_reflectance.py
     - 04_water_mask.py
     - 05_pca_kmeans_water.py
+    - 11_proxy_map_ndti_ndci.py
 
 masking:
   green_nm: 549.0
@@ -27,3 +28,14 @@ clustering:
   tile_size: 512
   sample_silhouette: 80000
   stability_runs: 6
+
+proxies:
+  ndti_green_nm: 570.0
+  ndti_red_nm: 660.0
+  ndci_red_edge_nm: 711.0
+  ndci_red_nm: 669.0
+  ngb_nm: [764.0, 549.0, 510.0]
+  percentile_lo: 2.0
+  percentile_hi: 98.0
+  hotspot_top_pct: 10.0
+  n_bins: 5
