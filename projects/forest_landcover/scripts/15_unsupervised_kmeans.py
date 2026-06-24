@@ -91,9 +91,10 @@ def main(config: Config) -> None:
         cube = io.read_cube(ds, window=win)
         cube[~_subset_mask(valid_full, win)] = np.nan
         X, _ = clustering.flatten_valid(cube)
-        pca, kmeans = clustering.fit_pca_kmeans(
+        fit = clustering.fit_pca_kmeans(
             X, k=cl.k, pca_components=cl.pca_components, n_samples=cl.n_samples, random_state=seed,
         )
+        pca, kmeans = fit.pca, fit.kmeans
         logger.info("Fitted PCA + KMeans.")
 
         profile = ds.profile.copy()

@@ -6,6 +6,7 @@ pipeline:
   stages:
     - 02_convert_to_toa_reflectance.py
     - 04_water_mask.py
+    - 05_pca_kmeans_water.py
 
 masking:
   green_nm: 549.0
@@ -18,3 +19,11 @@ masking:
   red_percentile: 55.0
   percentile_lo: 2.0
   percentile_hi: 98.0
+
+clustering:
+  k: 5
+  pca_components: 8
+  n_samples: 200000
+  tile_size: 512
+  sample_silhouette: 80000
+  stability_runs: 6

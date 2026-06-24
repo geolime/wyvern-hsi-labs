@@ -1,399 +1,162 @@
+"""
+Unsupervised water-type grouping: PCA + KMeans over water-only TOA reflectance.
+
+Fits PCA->KMeans on sampled water pixels, predicts the water-only scene, and produces
+diagnostics: PCA scree/cumulative, sampled silhouette, KMeans ARI stability, a class map,
+PC1/2/3 composite, per-cluster brightness/slope proxies, mean spectra, and a summary.
+
+NOTE: an unsupervised grouping of optically similar water, NOT a validated classification.
+Products are TOA reflectance (no atmospheric correction).
+"""
 from __future__ import annotations
 
-from pathlib import Path
+import logging
 
-import numpy as np
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+import numpy as np
 import rasterio
-from rasterio.windows import Window
+from sklearn.metrics import silhouette_score
 
-from sklearn.cluster import KMeans
-from sklearn.decomposition import PCA
-from sklearn.metrics import silhouette_score, adjusted_rand_score
-
-from scipy.ndimage import label
-
-from wyvernhsi.paths import ACTIVE_WYVERN_FILE, ACTIVE_WYVERN_MASK, OUTPUTS_DIR
+from wyvernhsi import clustering, io, visualization
+from wyvernhsi.config import Config, load_config
+from wyvernhsi.logging_setup import configure_logging
 from wyvernhsi.masks import load_valid_mask, load_water_mask
-from wyvernhsi.wavelengths import parse_wavelengths_nm_from_descriptions
+from wyvernhsi.paths import project_dir_of, repo_root, resolve_scene
+from wyvernhsi.wavelengths import parse_wavelengths_nm_from_descriptions, pick_band_index_nearest
+
+logger = logging.getLogger(__name__)
 
 
-# ---------------- Settings ----------------
-K = 5
-PCA_N = 8
-
-SAMPLE_FIT = 200_000        # PCA+KMeans fit
-SAMPLE_SIL = 80_000         # silhouette sample size
-STABILITY_RUNS = 6          # ARI runs
-
-TILE_SIZE = 512
-RANDOM_SEED = 42
-
-OUT_PREFIX = f"water_kmeans_K{K}_PCA{PCA_N}"
+def _save_line(xs, ys, ylabel, title, out_png):
+    plt.figure(figsize=(7, 4))
+    plt.plot(xs, ys, marker="o")
+    plt.xlabel("PC"); plt.ylabel(ylabel); plt.title(title)
+    plt.tight_layout(); plt.savefig(out_png, dpi=200); plt.close()
 
 
-# ---------------- Helpers ----------------
-def ensure_dir(p: Path) -> None:
-    p.mkdir(parents=True, exist_ok=True)
+def _save_boxplot(values_per_cluster, ylabel, title, out_png):
+    plt.figure(figsize=(10, 4))
+    plt.boxplot(values_per_cluster,
+                tick_labels=[str(k) for k in range(len(values_per_cluster))], showfliers=False)
+    plt.xlabel("Cluster"); plt.ylabel(ylabel); plt.title(title)
+    plt.tight_layout(); plt.savefig(out_png, dpi=200); plt.close()
 
 
-def l2_normalize_rows(X: np.ndarray, eps: float = 1e-12) -> np.ndarray:
-    n = np.linalg.norm(X, axis=1, keepdims=True)
-    return X / (n + eps)
+def main(config: Config) -> None:
+    cl = config.clustering
+    seed = config.random_seed
+    scene = resolve_scene(config.project_dir)
+    out = scene.outputs_dir
+    out.mkdir(parents=True, exist_ok=True)
+    prefix = f"water_kmeans_K{cl.k}_PCA{cl.pca_components}"
 
+    valid_mask = load_valid_mask(scene.mask)
+    water_mask = load_water_mask(out / "masks" / "water_mask.tif")
+    use_mask = valid_mask & water_mask
 
-def read_cube(ds: rasterio.DatasetReader, win: Window | None) -> np.ndarray:
-    """Return cube as float32 with shape (Y, X, B)."""
-    arr = ds.read(window=win).astype(np.float32)  # (B,Y,X)
-    if ds.nodata is not None:
-        arr[arr == ds.nodata] = np.nan
-    cube = np.transpose(arr, (1, 2, 0))          # (Y,X,B)
-    return cube
+    with rasterio.open(scene.reflectance) as ds:
+        wl_nm = parse_wavelengths_nm_from_descriptions(list(ds.descriptions))
+        profile = ds.profile
+        cube = io.read_cube(ds)  # whole scene, read ONCE and reused throughout
 
-
-def flatten_valid(cube_yxb: np.ndarray, use_mask: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
-    """
-    cube_yxb: (H,W,B)
-    use_mask: (H,W) bool where we want to keep pixels (valid & water)
-    Returns:
-      X: (N,B)
-      valid2d: (H,W) bool for selected finite pixels
-    """
-    valid2d = use_mask & np.isfinite(cube_yxb).all(axis=2)
-    X = cube_yxb[valid2d]
-    return X, valid2d
-
-
-def percentile_stretch01(x: np.ndarray, lo: float = 2.0, hi: float = 98.0) -> np.ndarray:
-    a = np.nanpercentile(x, lo)
-    b = np.nanpercentile(x, hi)
-    y = (x - a) / (b - a + 1e-12)
-    return np.clip(y, 0, 1)
-
-
-def predict_tile(tile_yxb: np.ndarray, tile_use_mask: np.ndarray, pca: PCA, kmeans: KMeans) -> np.ndarray:
-    """
-    Predict cluster IDs for one tile.
-    Returns int16 (H,W) with -1 for non-use pixels.
-    """
-    out = np.full(tile_yxb.shape[:2], -1, dtype=np.int16)
-
-    X, valid2d = flatten_valid(tile_yxb, tile_use_mask)
+    cube[~use_mask] = np.nan  # water-only
+    X, _ = clustering.flatten_valid(cube)
     if X.shape[0] == 0:
-        return out
+        raise RuntimeError("No valid water pixels after masks. Check water-mask / QA overlap.")
 
-    Xn = l2_normalize_rows(X)
-    Z = pca.transform(Xn)
-    lab = kmeans.predict(Z).astype(np.int16)
-    out[valid2d] = lab
-    return out
+    fit = clustering.fit_pca_kmeans(X, k=cl.k, pca_components=cl.pca_components,
+                                    n_samples=cl.n_samples, random_state=seed)
+    pca, Zs, y_ref = fit.pca, fit.sample_z, fit.sample_labels
+    logger.info("Fit: samples=%d, bands=%d, PCA=%d, K=%d",
+                Zs.shape[0], cube.shape[2], pca.n_components_, cl.k)
 
+    evr = pca.explained_variance_ratio_
+    cum = np.cumsum(evr)
+    pcs_x = np.arange(1, len(evr) + 1)
+    _save_line(pcs_x, evr, "Explained variance ratio",
+               "PCA explained variance (water-only)", out / f"{prefix}_pca_scree.png")
+    _save_line(pcs_x, cum, "Cumulative explained variance",
+               "PCA cumulative explained variance (water-only)", out / f"{prefix}_pca_cumulative.png")
 
-def compute_cluster_means(ds: rasterio.DatasetReader, labels_path: Path, wl_nm: np.ndarray, use_mask_full: np.ndarray) -> None:
-    """
-    Second pass over tiles: mean spectrum per cluster (on L2-normalized spectra).
-    """
-    sums = np.zeros((K, ds.count), dtype=np.float64)
-    counts = np.zeros((K,), dtype=np.int64)
+    rng = np.random.default_rng(seed)
+    sil_sel = rng.choice(Zs.shape[0], min(cl.sample_silhouette, Zs.shape[0]), replace=False)
+    sil = float(silhouette_score(Zs[sil_sel], y_ref[sil_sel]))
+    logger.info("Silhouette (sampled): %.4f", sil)
 
-    with rasterio.open(labels_path) as lab_ds:
-        H, W = ds.height, ds.width
+    seeds = [seed + i * 17 for i in range(cl.stability_runs)]
+    ari = clustering.ari_stability(Zs, k=cl.k, seeds=seeds)
+    plt.figure(figsize=(6, 5))
+    plt.imshow(ari, interpolation="nearest")
+    plt.xticks(range(len(seeds)), [str(s) for s in seeds], rotation=45, ha="right")
+    plt.yticks(range(len(seeds)), [str(s) for s in seeds])
+    plt.title("KMeans stability (ARI) — water-only"); plt.colorbar(); plt.tight_layout()
+    plt.savefig(out / f"{prefix}_stability_ari.png", dpi=200); plt.close()
 
-        for r0 in range(0, H, TILE_SIZE):
-            for c0 in range(0, W, TILE_SIZE):
-                r1 = min(H, r0 + TILE_SIZE)
-                c1 = min(W, c0 + TILE_SIZE)
-                w = Window.from_slices((r0, r1), (c0, c1))
+    # Whole water-only prediction (per-pixel, so identical to tiling)
+    lab = clustering.predict_tile(cube, pca, fit.kmeans)
+    out_tif = out / f"{prefix}.tif"
+    io.write_geotiff(profile, out_tif, lab, nodata=-1, dtype="int16", descriptions=["WATER_CLUSTER"])
+    with rasterio.open(out_tif, "r+") as dst:
+        dst.update_tags(kmeans_K=str(cl.k), pca_components=str(pca.n_components_),
+                        samples=str(Zs.shape[0]), mask="valid&water",
+                        random_seed=str(seed), silhouette=str(sil))
+    logger.info("Wrote: %s", out_tif)
 
-                cube = read_cube(ds, w)  # (y,x,b)
-                labs = lab_ds.read(1, window=w).astype(np.int16)
+    plt.figure(figsize=(12, 10))
+    plt.imshow(lab, vmin=0, vmax=cl.k - 1); plt.axis("off")
+    plt.title(f"KMeans clusters (water-only) — K={cl.k}"); plt.tight_layout()
+    plt.savefig(out / f"{prefix}.png", dpi=200); plt.close()
 
-                tile_use = use_mask_full[r0:r1, c0:c1]
-                valid = tile_use & (labs >= 0) & np.isfinite(cube).all(axis=2)
-                if not np.any(valid):
-                    continue
+    # Per-cluster proxies (bands resolved by wavelength, not hardcoded indices)
+    keep = (lab >= 0) & np.isfinite(cube).all(axis=2)
+    Xk, yk = cube[keep], lab[keep]
+    bright = np.mean(Xk, axis=1)
+    b_lo = pick_band_index_nearest(wl_nm, 510.0)
+    b_hi = pick_band_index_nearest(wl_nm, 660.0)
+    slope = (Xk[:, b_hi] - Xk[:, b_lo]) / (660.0 - 510.0)
+    _save_boxplot([bright[yk == k] for k in range(cl.k)], "Mean TOA reflectance (all bands)",
+                  "Cluster brightness proxy (water-only)", out / f"{prefix}_cluster_brightness.png")
+    _save_boxplot([slope[yk == k] for k in range(cl.k)], "Slope (R660 - R510) / 150 nm",
+                  "Cluster red-blue slope proxy (water-only)", out / f"{prefix}_cluster_slope.png")
 
-                X = cube[valid]
-                y = labs[valid]
+    # PC1/2/3 composite (water-only)
+    H, W, B = cube.shape
+    flat = cube.reshape(-1, B)
+    use_flat = np.isfinite(flat).all(axis=1)
+    Zv = pca.transform(clustering.l2_normalize_rows(flat[use_flat]))[:, :3].astype(np.float32)
+    pcs = np.full((H * W, 3), np.nan, dtype=np.float32)
+    pcs[use_flat] = Zv
+    pcs = pcs.reshape(H, W, 3)
+    rgb = np.dstack([visualization.percentile_stretch(pcs[:, :, i]) for i in range(3)])
+    plt.figure(figsize=(14, 10)); plt.imshow(rgb); plt.axis("off")
+    plt.title("PCA composite (PC1, PC2, PC3) — water-only"); plt.tight_layout()
+    plt.savefig(out / f"{prefix}_pca_pc123.png", dpi=200); plt.close()
 
-                X = l2_normalize_rows(X)
-
-                for k in range(K):
-                    m = (y == k)
-                    if np.any(m):
-                        sums[k] += np.sum(X[m], axis=0)
-                        counts[k] += int(np.sum(m))
-
-    means = np.full((K, ds.count), np.nan, dtype=np.float32)
-    for k in range(K):
-        if counts[k] > 0:
-            means[k] = (sums[k] / counts[k]).astype(np.float32)
-
+    # Mean spectra per cluster (in-memory; cube already loaded)
+    means, counts = clustering.cluster_mean_spectra([(cube, lab)], k=cl.k, n_bands=B, normalize=True)
     plt.figure(figsize=(12, 7))
-    for k in range(K):
+    for k in range(cl.k):
         if np.isfinite(means[k]).any():
             plt.plot(wl_nm, means[k], label=f"cluster {k} (n={counts[k]})")
     plt.xlabel("Wavelength (nm)")
-    plt.ylabel("L2-normalized radiance")
-    plt.title(f"Cluster mean spectra (water-only) — K={K}, PCA={PCA_N}")
-    plt.legend()
-    plt.tight_layout()
-    out_png = OUTPUTS_DIR / f"{OUT_PREFIX}_cluster_mean_spectra.png"
-    plt.savefig(out_png, dpi=200)
-    plt.close()
-    print("Wrote:", out_png)
+    plt.ylabel("L2-normalized TOA reflectance")  # corrected from "radiance"
+    plt.title(f"Cluster mean spectra (water-only) — K={cl.k}, PCA={cl.pca_components}")
+    plt.legend(); plt.tight_layout()
+    plt.savefig(out / f"{prefix}_cluster_mean_spectra.png", dpi=200); plt.close()
 
-
-# ---------------- Main ----------------
-def main() -> None:
-    ensure_dir(OUTPUTS_DIR)
-
-    if not ACTIVE_WYVERN_FILE.exists():
-        raise FileNotFoundError(f"Missing local file: {ACTIVE_WYVERN_FILE}")
-    if not ACTIVE_WYVERN_MASK.exists():
-        raise FileNotFoundError(f"Missing local file: {ACTIVE_WYVERN_MASK}")
-
-    # Masks (full scene)
-    valid_mask = load_valid_mask(ACTIVE_WYVERN_MASK)   # True where OK
-    water_mask = load_water_mask()                     # True where water
-    use_mask_full = valid_mask & water_mask            # True where we will operate
-
-    out_tif = OUTPUTS_DIR / f"{OUT_PREFIX}.tif"
-
-    with rasterio.open(ACTIVE_WYVERN_FILE) as ds:
-        wl_nm = parse_wavelengths_nm_from_descriptions(list(ds.descriptions))
-
-        # -------- Fit PCA + KMeans on sampled water pixels --------
-        cube_full = read_cube(ds, None)  # (H,W,B) (ok for your sizes; if huge, we can tile-sample instead)
-        cube_full[~use_mask_full] = np.nan
-
-        X, _ = flatten_valid(cube_full, use_mask_full)
-        if X.shape[0] == 0:
-            raise RuntimeError("No valid water pixels after masks. Check water_mask + QA mask overlap.")
-
-        rng = np.random.default_rng(RANDOM_SEED)
-        take = min(SAMPLE_FIT, X.shape[0])
-        sel = rng.choice(X.shape[0], size=take, replace=False)
-        Xs = X[sel].astype(np.float32)
-        Xs = l2_normalize_rows(Xs)
-
-        pca = PCA(n_components=min(PCA_N, Xs.shape[1]), random_state=RANDOM_SEED)
-        Zs = pca.fit_transform(Xs)
-
-        km = KMeans(n_clusters=K, n_init="auto", random_state=RANDOM_SEED)
-        y_ref = km.fit_predict(Zs)
-
-        print(f"Fit: samples={take:,}, bands={Xs.shape[1]}, PCA={pca.n_components_}, K={K}")
-
-        # -------- PCA diagnostics --------
-        evr = pca.explained_variance_ratio_
-        cum = np.cumsum(evr)
-
-        plt.figure(figsize=(7, 4))
-        plt.plot(np.arange(1, len(evr) + 1), evr, marker="o")
-        plt.xlabel("PC")
-        plt.ylabel("Explained variance ratio")
-        plt.title("PCA explained variance (water-only)")
-        plt.tight_layout()
-        out_scree = OUTPUTS_DIR / f"{OUT_PREFIX}_pca_scree.png"
-        plt.savefig(out_scree, dpi=200)
-        plt.close()
-
-        plt.figure(figsize=(7, 4))
-        plt.plot(np.arange(1, len(cum) + 1), cum, marker="o")
-        plt.xlabel("PC")
-        plt.ylabel("Cumulative explained variance")
-        plt.title("PCA cumulative explained variance (water-only)")
-        plt.tight_layout()
-        out_cum = OUTPUTS_DIR / f"{OUT_PREFIX}_pca_cumulative.png"
-        plt.savefig(out_cum, dpi=200)
-        plt.close()
-
-        # -------- Silhouette (sampled) --------
-        sil_take = min(SAMPLE_SIL, Zs.shape[0])
-        sil_sel = rng.choice(Zs.shape[0], size=sil_take, replace=False)
-        sil = silhouette_score(Zs[sil_sel], y_ref[sil_sel], metric="euclidean")
-        print("Silhouette (sampled):", float(sil))
-
-        # -------- ARI stability (on same Zs sample) --------
-        seeds = [RANDOM_SEED + i * 17 for i in range(STABILITY_RUNS)]
-        ys = []
-        for s in seeds:
-            km_s = KMeans(n_clusters=K, n_init="auto", random_state=s)
-            ys.append(km_s.fit_predict(Zs))
-
-        ari = np.zeros((STABILITY_RUNS, STABILITY_RUNS), dtype=np.float32)
-        for i in range(STABILITY_RUNS):
-            for j in range(STABILITY_RUNS):
-                ari[i, j] = adjusted_rand_score(ys[i], ys[j])
-
-        plt.figure(figsize=(6, 5))
-        plt.imshow(ari, interpolation="nearest")
-        plt.xticks(range(STABILITY_RUNS), [str(s) for s in seeds], rotation=45, ha="right")
-        plt.yticks(range(STABILITY_RUNS), [str(s) for s in seeds])
-        plt.title("KMeans stability (ARI) — water-only")
-        plt.colorbar()
-        plt.tight_layout()
-        out_ari_png = OUTPUTS_DIR / f"{OUT_PREFIX}_stability_ari.png"
-        plt.savefig(out_ari_png, dpi=200)
-        plt.close()
-
-        # -------- Predict full scene in tiles (water-only) --------
-        profile = ds.profile.copy()
-        profile.update(
-            count=1,
-            dtype="int16",
-            nodata=-1,
-            compress="deflate",
-            predictor=2,
-            tiled=True,
-            blockxsize=TILE_SIZE,
-            blockysize=TILE_SIZE,
-        )
-
-        with rasterio.open(out_tif, "w", **profile) as dst:
-            dst.write(np.full((ds.height, ds.width), -1, dtype=np.int16), 1)
-
-            H, W = ds.height, ds.width
-            for r0 in range(0, H, TILE_SIZE):
-                for c0 in range(0, W, TILE_SIZE):
-                    r1 = min(H, r0 + TILE_SIZE)
-                    c1 = min(W, c0 + TILE_SIZE)
-                    w = Window.from_slices((r0, r1), (c0, c1))
-
-                    tile = read_cube(ds, w)
-                    tile_use = use_mask_full[r0:r1, c0:c1]
-
-                    labs = predict_tile(tile, tile_use, pca, km)
-                    dst.write(labs, 1, window=w)
-
-        with rasterio.open(out_tif, "r+") as dst:
-            dst.update_tags(
-                kmeans_K=str(K),
-                pca_components=str(pca.n_components_),
-                samples=str(take),
-                mask="valid&water",
-                random_seed=str(RANDOM_SEED),
-                silhouette=str(float(sil)),
-            )
-
-        print("Wrote:", out_tif)
-
-        # -------- PNG cluster preview --------
-        with rasterio.open(out_tif) as ds_lab:
-            lab = ds_lab.read(1).astype(np.int16)
-
-        plt.figure(figsize=(12, 10))
-        plt.imshow(lab, vmin=0, vmax=K - 1)
-        plt.axis("off")
-        plt.title(f"KMeans clusters (water-only) — K={K}")
-        plt.tight_layout()
-        out_png = OUTPUTS_DIR / f"{OUT_PREFIX}.png"
-        plt.savefig(out_png, dpi=200)
-        plt.close()
-        print("Wrote:", out_png)
-
-        # =========================================================
-        # --- Simple physical-ish diagnostics (water-only) ---
-        # =========================================================
-
-        with rasterio.open(ACTIVE_WYVERN_FILE) as ds2:
-            cube = ds2.read().astype(np.float32)   # (B,H,W)
-            cube = np.transpose(cube, (1, 2, 0))  # (H,W,B)
-
-        use = use_mask_full & (lab >= 0) & np.isfinite(cube).all(axis=2)
-        X = cube[use]          # (N,B)
-        y = lab[use]           # (N,)
-
-        # Brightness proxy: mean radiance across bands
-        bright = np.mean(X, axis=1)
-
-        # Visible slope proxy (660 - 510)
-        b510 = 2 - 1
-        b660 = 12 - 1
-        slope = (X[:, b660] - X[:, b510]) / (660 - 510)
-
-        # Plot distributions per cluster
-        plt.figure(figsize=(10, 4))
-        plt.boxplot(
-            [bright[y == k] for k in range(K)],
-            tick_labels=[str(k) for k in range(K)],
-            showfliers=False,
-        )
-
-        plt.xlabel("Cluster")
-        plt.ylabel("Mean radiance (all bands)")
-        plt.title("Cluster brightness proxy (water-only)")
-        plt.tight_layout()
-        out_b = OUTPUTS_DIR / f"{OUT_PREFIX}_cluster_brightness.png"
-        plt.savefig(out_b, dpi=200)
-        plt.close()
-
-        plt.figure(figsize=(10, 4))
-        plt.boxplot(
-            [slope[y == k] for k in range(K)],
-            tick_labels=[str(k) for k in range(K)],
-            showfliers=False,
-        )
-
-        plt.xlabel("Cluster")
-        plt.ylabel("Slope (Band660 - Band510) / 150nm")
-        plt.title("Cluster red–blue slope proxy (water-only)")
-        plt.tight_layout()
-        out_s = OUTPUTS_DIR / f"{OUT_PREFIX}_cluster_slope.png"
-        plt.savefig(out_s, dpi=200)
-        plt.close()
-
-        print("Wrote:", out_b)
-        print("Wrote:", out_s)
-
-        # -------- PCA PC1/2/3 composite (water-only) --------
-        # Transform all water pixels (full scene) and write PC1/2/3 into image for viz
-        H, W, B = cube_full.shape
-        pcs = np.full((H, W, 3), np.nan, dtype=np.float32)
-
-        flat = cube_full.reshape(-1, B)
-        use_flat = np.isfinite(flat).all(axis=1)  # already NaN outside water
-
-        Xv = flat[use_flat].astype(np.float32)
-        Xv = l2_normalize_rows(Xv)
-        Zv = pca.transform(Xv)[:, :3].astype(np.float32)
-
-        pcs_flat = pcs.reshape(-1, 3)
-        pcs_flat[use_flat] = Zv
-
-        pc1 = percentile_stretch01(pcs[:, :, 0], 2, 98)
-        pc2 = percentile_stretch01(pcs[:, :, 1], 2, 98)
-        pc3 = percentile_stretch01(pcs[:, :, 2], 2, 98)
-        pca_rgb = np.dstack([pc1, pc2, pc3])
-
-        plt.figure(figsize=(14, 10))
-        plt.imshow(pca_rgb)
-        plt.axis("off")
-        plt.title("PCA composite (PC1, PC2, PC3) — water-only")
-        plt.tight_layout()
-        out_pca_rgb = OUTPUTS_DIR / f"{OUT_PREFIX}_pca_pc123.png"
-        plt.savefig(out_pca_rgb, dpi=200)
-        plt.close()
-        print("Wrote:", out_pca_rgb)
-
-        # -------- Mean spectra per cluster --------
-        compute_cluster_means(ds, out_tif, wl_nm, use_mask_full)
-
-        # -------- Summary text (easy README paste) --------
-        out_txt = OUTPUTS_DIR / f"{OUT_PREFIX}_summary.txt"
-        ari_mean_offdiag = float((ari.sum() - np.trace(ari)) / (ari.size - STABILITY_RUNS))
-        with open(out_txt, "w", encoding="utf-8") as f:
-            f.write(f"K: {K}\n")
-            f.write(f"PCA_N: {pca.n_components_}\n")
-            f.write(f"Samples_fit: {take}\n")
-            f.write(f"Silhouette_sampled: {float(sil)}\n")
-            f.write(f"Explained_variance_ratio: {evr.tolist()}\n")
-            f.write(f"Cumulative_explained_variance: {cum.tolist()}\n")
-            f.write(f"ARI_runs: {STABILITY_RUNS}\n")
-            f.write(f"ARI_mean_offdiag: {ari_mean_offdiag}\n")
-        print("Wrote:", out_txt)
+    ari_offdiag = float((ari.sum() - np.trace(ari)) / (ari.size - len(seeds)))
+    (out / f"{prefix}_summary.txt").write_text(
+        f"K: {cl.k}\nPCA_N: {pca.n_components_}\nSamples_fit: {Zs.shape[0]}\n"
+        f"Silhouette_sampled: {sil}\nExplained_variance_ratio: {evr.tolist()}\n"
+        f"Cumulative_explained_variance: {cum.tolist()}\n"
+        f"ARI_runs: {len(seeds)}\nARI_mean_offdiag: {ari_offdiag}\n",
+        encoding="utf-8",
+    )
+    logger.info("Wrote: %s", out / f"{prefix}_summary.txt")
 
 
 if __name__ == "__main__":
-    main()
+    configure_logging()
+    main(load_config(repo_root() / "configs" / f"{project_dir_of(__file__).name}.yaml"))

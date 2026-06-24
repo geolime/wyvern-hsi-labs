@@ -19,15 +19,24 @@ def test_flatten_valid_drops_nan_pixels():
 def test_fit_is_deterministic_and_predicts():
     rng = np.random.default_rng(0)
     X = np.vstack([rng.normal(0, 0.1, (200, 4)), rng.normal(5, 0.1, (200, 4))]).astype(np.float32)
-    p1, k1 = clustering.fit_pca_kmeans(X, k=2, pca_components=2, n_samples=400, random_state=42)
-    p2, k2 = clustering.fit_pca_kmeans(X, k=2, pca_components=2, n_samples=400, random_state=42)
-    np.testing.assert_allclose(k1.cluster_centers_, k2.cluster_centers_)
+    f1 = clustering.fit_pca_kmeans(X, k=2, pca_components=2, n_samples=400, random_state=42)
+    f2 = clustering.fit_pca_kmeans(X, k=2, pca_components=2, n_samples=400, random_state=42)
+    np.testing.assert_allclose(f1.kmeans.cluster_centers_, f2.kmeans.cluster_centers_)
 
     tile = X[:4].reshape(2, 2, 4).copy()
     tile[0, 0, :] = np.nan
-    labels = clustering.predict_tile(tile, p1, k1)
+    labels = clustering.predict_tile(tile, f1.pca, f1.kmeans)
     assert labels.dtype == np.int16 and labels[0, 0] == -1
     assert set(np.unique(labels)).issubset({-1, 0, 1})
+
+
+def test_ari_stability():
+    rng = np.random.default_rng(0)
+    Z = np.vstack([rng.normal(0, 0.05, (100, 2)), rng.normal(5, 0.05, (100, 2))])
+    ari = clustering.ari_stability(Z, k=2, seeds=[1, 2, 3])
+    assert ari.shape == (3, 3)
+    np.testing.assert_allclose(np.diag(ari), 1.0)
+    assert (ari >= 0.99).all()  # clean blobs cluster identically across seeds
 
 
 def test_fit_empty_raises():

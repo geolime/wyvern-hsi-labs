@@ -1,11 +1,21 @@
 """PCA + KMeans over hyperspectral pixels (pure numpy/sklearn; no raster I/O)."""
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import Iterable
 
 import numpy as np
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
+from sklearn.metrics import adjusted_rand_score
+
+
+@dataclass
+class PcaKmeansFit:
+    pca: PCA
+    kmeans: KMeans
+    sample_z: np.ndarray       # transformed fit sample (n, pca_components)
+    sample_labels: np.ndarray  # KMeans labels of the fit sample (n,)
 
 
 def l2_normalize_rows(X: np.ndarray, eps: float = 1e-12) -> np.ndarray:
@@ -21,13 +31,8 @@ def flatten_valid(cube_yxb: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
 
 
 def fit_pca_kmeans(
-    X: np.ndarray,
-    *,
-    k: int,
-    pca_components: int,
-    n_samples: int,
-    random_state: int,
-) -> tuple[PCA, KMeans]:
+    X: np.ndarray, *, k: int, pca_components: int, n_samples: int, random_state: int
+) -> PcaKmeansFit:
     """Fit PCA then KMeans on an L2-normalised random sample of X (rows = pixels)."""
     if X.shape[0] == 0:
         raise ValueError("No valid pixels to fit on.")
@@ -39,8 +44,8 @@ def fit_pca_kmeans(
     Zs = pca.fit_transform(Xs)
 
     kmeans = KMeans(n_clusters=k, random_state=random_state, n_init="auto")
-    kmeans.fit(Zs)
-    return pca, kmeans
+    labels = kmeans.fit_predict(Zs).astype(np.int32)
+    return PcaKmeansFit(pca=pca, kmeans=kmeans, sample_z=Zs, sample_labels=labels)
 
 
 def predict_tile(tile_yxb: np.ndarray, pca: PCA, kmeans: KMeans) -> np.ndarray:
@@ -54,19 +59,23 @@ def predict_tile(tile_yxb: np.ndarray, pca: PCA, kmeans: KMeans) -> np.ndarray:
     return out
 
 
+def ari_stability(Z: np.ndarray, *, k: int, seeds: list) -> np.ndarray:
+    """Pairwise adjusted Rand index across KMeans runs with different seeds on the same Z."""
+    runs = [KMeans(n_clusters=k, n_init="auto", random_state=s).fit_predict(Z) for s in seeds]
+    n = len(seeds)
+    ari = np.eye(n, dtype=np.float32)
+    for i in range(n):
+        for j in range(i + 1, n):
+            ari[i, j] = ari[j, i] = adjusted_rand_score(runs[i], runs[j])
+    return ari
+
+
 def cluster_mean_spectra(
-    tiles: Iterable[tuple[np.ndarray, np.ndarray]],
-    *,
-    k: int,
-    n_bands: int,
-    normalize: bool = True,
+    tiles: Iterable[tuple[np.ndarray, np.ndarray]], *, k: int, n_bands: int, normalize: bool = True
 ) -> tuple[np.ndarray, np.ndarray]:
     """
-    Mean spectrum per cluster, accumulated over (cube_yxb, labels_yx) tile pairs so the
-    whole scene never sits in memory at once.
-
+    Mean spectrum per cluster, accumulated over (cube_yxb, labels_yx) tile pairs.
     Returns (means [k, n_bands] float32 with NaN for empty clusters, counts [k] int64).
-    normalize=True matches L2-normalised KMeans preprocessing.
     """
     sums = np.zeros((k, n_bands), dtype=np.float64)
     counts = np.zeros(k, dtype=np.int64)

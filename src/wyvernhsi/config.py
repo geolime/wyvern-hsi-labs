@@ -1,7 +1,7 @@
 """Typed configuration loaded from a project's YAML file."""
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
 
@@ -16,9 +16,11 @@ class ClusteringCfg:
     pca_components: int
     n_samples: int
     tile_size: int
-    use_subset: bool
-    subset_pad: int
-    subset_points: list
+    use_subset: bool = False
+    subset_pad: int = 0
+    subset_points: list = field(default_factory=list)
+    sample_silhouette: int = 0
+    stability_runs: int = 0
 
 
 @dataclass(frozen=True)
