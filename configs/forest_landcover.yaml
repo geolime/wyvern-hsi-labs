@@ -9,6 +9,7 @@ pipeline:
     - 12_sam_fullscene_geotiff.py
     - 24_compute_indices.py
     - 25_analysis_metrics.py
+    - 22_export_previews.py
 
 clustering:
   k: 5
