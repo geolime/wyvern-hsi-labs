@@ -26,10 +26,18 @@ from wyvernhsi.paths import project_dir_of, repo_root, resolve_scene
 logger = logging.getLogger(__name__)
 
 CIR_NM = (800.0, 660.0, 560.0)
+RGB_NM = (660.0, 549.0, 510.0)
 GAMMA = 0.85
 NODATA_COLOR = (0.92, 0.92, 0.92)
 SAM_PALETTE = [(0.10, 0.45, 0.10), (0.30, 0.75, 0.30), (0.80, 0.70, 0.50)]
 
+def _save_quicklook(path, img, title):
+    plt.figure(figsize=(12, 10))
+    plt.imshow(img)
+    plt.axis("off"); plt.title(title)
+    plt.tight_layout(); plt.savefig(path, dpi=200, bbox_inches="tight", pad_inches=0.05)
+    plt.close()
+    logger.info("Wrote: %s", path)
 
 def _cir(ds):
     return np.dstack([visualization.percentile_stretch(io.read_band_nm(ds, nm), 1, 99) ** GAMMA
@@ -80,7 +88,13 @@ def main(config: Config) -> None:
     out.mkdir(parents=True, exist_ok=True)
 
     with rasterio.open(scene.reflectance) as ds:
-        cir = _cir(ds)  # read once, reused for both overlays
+        cir = _cir(ds)  # read once, reused for overlays + the CIR quicklook
+        rgb = visualization.stretch_rgb(io.read_composite(ds, RGB_NM), 2, 98)
+
+    previews = out / "previews"
+    previews.mkdir(parents=True, exist_ok=True)
+    _save_quicklook(previews / "rgb_quicklook.png", rgb, "True-colour (RGB) — full scene")
+    _save_quicklook(previews / "cir_quicklook.png", cir, "Colour-infrared (CIR) — full scene")
 
     with rasterio.open(out / f"kmeans_clusters_K{k}.tif") as ds:
         km = ds.read(1).astype(np.int16)
