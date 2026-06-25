@@ -12,6 +12,7 @@ pipeline:
     - 11_proxy_map_ndti_ndci.py
     - 12_class_proxy_summary.py
     - 13_composite_proxy_map.py
+    - 14_make_proxy_panels.py
 
 masking:
   green_nm: 549.0

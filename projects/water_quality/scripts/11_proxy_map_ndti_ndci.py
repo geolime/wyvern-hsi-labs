@@ -25,9 +25,6 @@ from wyvernhsi.paths import project_dir_of, repo_root, resolve_scene
 logger = logging.getLogger(__name__)
 
 
-ngb = visualization.stretch_rgb(io.read_composite(ds, p.ngb_nm), p.percentile_lo, p.percentile_hi)
-
-
 def _robust_limits(x, lo=2.0, hi=98.0):
     v = x[np.isfinite(x)]
     if v.size == 0:
@@ -105,7 +102,7 @@ def main(config: Config) -> None:
     with rasterio.open(scene.reflectance) as ds:
         ndti = indices.ndti(io.read_band_nm(ds, p.ndti_red_nm), io.read_band_nm(ds, p.ndti_green_nm))
         ndci = indices.ndci(io.read_band_nm(ds, p.ndci_red_edge_nm), io.read_band_nm(ds, p.ndci_red_nm))
-        ngb = _ngb_composite(ds, p.ngb_nm, p.percentile_lo, p.percentile_hi)
+        ngb = visualization.stretch_rgb(io.read_composite(ds, p.ngb_nm), p.percentile_lo, p.percentile_hi)
 
     top = int(p.hotspot_top_pct)
     for name, arr, title in (("ndti", ndti, "NDTI (turbidity proxy)"),
