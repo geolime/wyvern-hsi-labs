@@ -1,6 +1,6 @@
 # wyvern-hsi-labs
 
-![ci](https://github.com/<OWNER>/wyvern-hsi-labs/actions/workflows/ci.yml/badge.svg)
+![ci](https://github.com/geolime/wyvern-hsi-labs/actions/workflows/ci.yml/badge.svg)
 
 Hyperspectral remote-sensing pipelines for [Wyvern](https://wyvern.space/) Dragonette open data: a small, tested Python library (`wyvernhsi`) plus two config-driven analysis projects built on it.
 
