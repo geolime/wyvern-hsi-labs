@@ -13,6 +13,7 @@ pipeline:
     - 12_class_proxy_summary.py
     - 13_composite_proxy_map.py
     - 14_make_proxy_panels.py
+    - 03_export_previews.py
 
 masking:
   green_nm: 549.0
