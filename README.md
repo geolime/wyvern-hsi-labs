@@ -17,7 +17,17 @@ The library converts L1B top-of-atmosphere (TOA) radiance to TOA reflectance fro
 | **PC1 / 8-PC variance** | 77.5% / 99.0% | 74.2% / 95.9% |
 | **K=5 silhouette / ARI** | 0.39 / 0.65 | 0.33 / 0.82 |
 
-![KMeans clusters](docs/figures/forest/kmeans_clusters_K5.png) ![Water mask](docs/figures/water/water_mask.png)
+### forest_landcover — Santa Cruz de la Sierra, Bolivia
+
+**Colour-infrared quicklook (full scene).** Healthy vegetation reflects strongly in the near-infrared and appears red; bare and built surfaces stay muted. This is the scene the land-cover pipeline operates on.
+
+![Forest CIR quicklook](docs/figures/forest/cir_quicklook.png)
+
+### water_quality — Bitter Lake, Egypt
+
+**NGB composite (NIR-Green-Blue), QA-masked.** Clouds are removed (black); the inland water body is the analysis target for the turbidity and chlorophyll proxies.
+
+![Water NGB composite](docs/figures/water/ngb_water_composite.png)
 
 ## Reproduce
 
@@ -48,7 +58,7 @@ src/wyvernhsi/
   indices.py       NDVI, NDTI, NDCI, red-edge slope, band ratio
   clustering.py    PCA+KMeans / standardized KMeans / tiled predict / ARI stability
   classification.py  Spectral Angle Mapper (SAM)
-  visualization.py percentile stretch + RGB stretch + figure helpers
+  visualization.py percentile/RGB stretch + heatmap/binned/contour/legend helpers
   reporting.py     run manifest + auto report
   logging_setup.py logging configuration
 ```
@@ -58,11 +68,11 @@ src/wyvernhsi/
 ```bash
 pip install -e ".[dev]"
 ruff check src tests pipelines
-pytest -q          # 34 tests
+pytest -q          # 38 tests
 ```
 
 CI (GitHub Actions) installs the package and runs lint + tests on every push.
 
 ## Notes on interpretation
 
-These are exploratory remote-sensing pipelines, and the READMEs are deliberate about what the numbers do and don't mean: KMeans groups are unsupervised (cluster IDs arbitrary), SAM has no accuracy assessment, water indices are optical proxies rather than concentrations, and with millions of pixels per group the meaningful statistic is effect size, not p-value. See each project README for the per-scene results and caveats.
+These are exploratory remote-sensing pipelines, and the READMEs are deliberate about what the numbers do and don't mean: KMeans groups are unsupervised (cluster IDs arbitrary), SAM has no accuracy assessment, water indices are optical proxies rather than concentrations, and with millions of pixels per group the meaningful statistic is effect size, not p-value. See each project README for per-scene results, figures, and caveats.

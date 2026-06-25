@@ -6,6 +6,12 @@ Water masking and optical water-quality **proxies** over a 31-band VNIR hyperspe
 
 > **Proxies, not concentrations.** NDTI and NDCI track relative optical signals associated with turbidity and chlorophyll. They are **not** calibrated concentrations: there is no atmospheric correction (products are TOA, not surface reflectance) and no in-situ validation. Every map below is a relative optical proxy.
 
+## The scene
+
+**NGB composite (NIR-Green-Blue), QA-masked.** Clouds are removed (rendered black); the inland water body of Bitter Lake is the analysis target. The NIR-forward band choice darkens clear water and brightens vegetation/turbid water, making the shoreline and in-water structure legible.
+
+![NGB composite](../../docs/figures/water/ngb_water_composite.png)
+
 ## Method
 
 ```text
@@ -25,9 +31,25 @@ The water-type maps are **unsupervised groupings** of in-water spectra, relabele
 
 ## Results (reference run)
 
-Water-pixel PCA is strongly low-dimensional — **PC1 explains ~74%, two PCs ~85%, eight PCs ~96%** of variance. The full-spectrum K=5 PCA+KMeans grouping is **very stable**: 6-seed mean ARI of **0.82** (sampled silhouette 0.33), notably more reproducible than the forest scene.
+### Spectral dimensionality
 
-The SFA grouping (KMeans on NDTI / NDCI / NIR-Red, relabeled by turbidity) splits the water into five tiers spanning roughly NDTI −0.21 (clearest) to −0.07 (most turbid):
+**PCA composite (PC1, PC2, PC3 → R, G, B), water-only.** Water-pixel reflectance is strongly low-dimensional — PC1 explains **74.2%**, two PCs **84.9%**, eight PCs **95.9%** of variance. Colour gradients across the lake trace smooth optical variation (clear → turbid), not sharp boundaries.
+
+![PCA composite](../../docs/figures/water/water_kmeans_K5_PCA8_pca_pc123.png)
+
+### KMeans water grouping
+
+**Full-spectrum PCA+KMeans (K=5), water-only.** This grouping is **very stable** — 6-seed mean ARI **0.82** (sampled silhouette 0.33), notably more reproducible than the forest scene. The spatial pattern is a coherent gradient rather than a patchwork, consistent with the smooth PCA variation.
+
+![KMeans water classes](../../docs/figures/water/water_kmeans_K5_PCA8.png)
+
+**Cluster mean spectra.** Each curve is a water cluster's mean L2-normalised TOA reflectance. The spread is concentrated in the visible/red-edge region where turbidity and chlorophyll modulate water-leaving signal — clearer clusters are darker and flatter, more turbid clusters lift across green–red. This is the optical basis for the turbidity ordering below.
+
+![Cluster mean spectra](../../docs/figures/water/water_kmeans_K5_PCA8_cluster_mean_spectra.png)
+
+### Turbidity tiers (SFA grouping)
+
+A separate KMeans on interpretable features (NDTI / NDCI / NIR-Red), relabeled by median NDTI, splits the water into five tiers spanning roughly NDTI −0.21 (clearest) to −0.07 (most turbid):
 
 | Tier | Class | Median NDTI | Median NDCI | Water fraction |
 |---|---|---|---|---|
@@ -37,11 +59,7 @@ The SFA grouping (KMeans on NDTI / NDCI / NIR-Red, relabeled by turbidity) split
 | turbid | 3 | −0.100 | −0.113 | 27.1% |
 | most turbid | 4 | −0.065 | −0.069 | 12.0% |
 
-The independent 4-feature KMeans (`water_features_kmeans`) recovers the same monotonic turbidity ordering across its five clusters (median NDTI −0.215 → −0.056), a useful internal consistency check between two different feature sets.
-
-![Water mask](../../docs/figures/water/water_mask.png)
-
-![Water pixels, true colour](../../docs/figures/water/rgb_water_only.png)
+The independent 4-feature KMeans (`water_features_kmeans`) recovers the same monotonic NDTI ordering (median −0.215 → −0.056) — a useful internal consistency check between two different feature sets.
 
 ## Reproduce
 
@@ -53,29 +71,28 @@ python pipelines/run_pipeline.py --config configs/water_quality.yaml
 
 Stages and thresholds (NDWI/NDVI cutoffs, band wavelengths, K, composite weights, percentiles) live in `configs/water_quality.yaml`. Each run writes GeoTIFFs, proxy maps, CSVs, a `manifest.json`, and a `report.md` under `outputs/`.
 
+## Limitations & next steps
+
+Everything here is TOA and uncalibrated: NDTI/NDCI are optical proxies, not turbidity or chlorophyll concentrations, and the tier labels are relative orderings, not water-quality classes. Validation would need atmospheric correction to surface reflectance plus in-situ samples. The composite "optical proxy" map uses arbitrary NDTI/NDCI weights and should be read as an exploratory blend, not an index.
+
 ## Outputs
 
 ```
-outputs/masks/
-  water_mask.tif / .png                    water-only mask + preview
-  rgb_water_only.png                       true-colour, water pixels only
-outputs/previews/
-  rgb_quicklook.png / ngb_water_composite.png
+outputs/masks/        water_mask.tif/.png, rgb_water_only.png
+outputs/previews/     rgb_quicklook.png, ngb_water_composite.png
 outputs/
-  water_kmeans_K5_PCA8.{tif,png}           full-spectrum PCA+KMeans water grouping
-  water_kmeans_K5_PCA8_summary.txt         PCA variance, silhouette, ARI
+  water_kmeans_K5_PCA8.{tif,png}                    full-spectrum PCA+KMeans
+  water_kmeans_K5_PCA8_pca_pc123.png                PCA composite
+  water_kmeans_K5_PCA8_cluster_mean_spectra.png     cluster spectra
+  water_kmeans_K5_PCA8_summary.txt                  PCA variance, silhouette, ARI
 outputs/water_features/
-  water_features_kmeans_K5.{tif,png}       4-feature KMeans (turbidity-ordered)
-  water_features_kmeans_K5_cluster_feature_stats.csv
+  water_features_kmeans_K5.{tif,png} + cluster_feature_stats.csv
   ndti_map.png / ndci_map.png
-  sfa_kmeans/sfa_kmeans_K5.{tif,png}       SFA water types
-  sfa_kmeans/sfa_kmeans_K5_feature_stats.csv
-  sfa_kmeans/sfa_kmeans_K5_class_summary.{csv,png}
+  sfa_kmeans/sfa_kmeans_K5.{tif,png} + feature_stats.csv + class_summary.{csv,png}
   sfa_kmeans/sfa_kmeans_K5_ndci_ranking.txt
   proxies/{whole_scene,water_only}/ndti_*.png, ndci_*.png
-  proxies/optical_proxy_composite_*.png    weighted NDTI+NDCI z-blend
-  figures/panel_ngb_*.png                  multi-panel proxy figures
+  proxies/optical_proxy_composite_*.png
+  figures/panel_ngb_*.png
   rgb_with_water_classes.png / ngb_with_water_classes.png / water_classes_only.png
-outputs/
-  manifest.json / report.md                run provenance + auto report
+outputs/  manifest.json / report.md
 ```
