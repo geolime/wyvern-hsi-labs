@@ -1,0 +1,1733 @@
+{
+  "type": "Feature",
+  "stac_version": "1.0.0",
+  "stac_extensions": [
+    "https://stac-extensions.github.io/processing/v1.1.0/schema.json",
+    "https://stac-extensions.github.io/classification/v2.0.0/schema.json",
+    "https://stac-extensions.github.io/sat/v1.0.0/schema.json",
+    "https://stac-extensions.github.io/view/v1.0.0/schema.json",
+    "https://stac-extensions.github.io/projection/v1.1.0/schema.json",
+    "https://stac-extensions.github.io/eo/v1.1.0/schema.json",
+    "https://stac-extensions.github.io/raster/v1.1.0/schema.json",
+    "https://stac-extensions.github.io/file/v2.1.0/schema.json"
+  ],
+  "id": "wyvern_dragonette-004_20250927T145218_edb4d3af",
+  "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+      [
+        [
+          -62.4117486260909,
+          -17.61004804393123
+        ],
+        [
+          -62.4117486260909,
+          -17.61000286734165
+        ],
+        [
+          -62.41165436915954,
+          -17.60995769075207
+        ],
+        [
+          -62.40910943201283,
+          -17.609460748266685
+        ],
+        [
+          -62.35274378705984,
+          -17.598528013588236
+        ],
+        [
+          -62.21437461182407,
+          -17.57178347255666
+        ],
+        [
+          -62.213667684838875,
+          -17.57164794278792
+        ],
+        [
+          -62.21362055637319,
+          -17.57164794278792
+        ],
+        [
+          -62.21357342790751,
+          -17.57182864914624
+        ],
+        [
+          -62.21329065711343,
+          -17.57313877024407
+        ],
+        [
+          -62.180253602671925,
+          -17.728094472504722
+        ],
+        [
+          -62.167199017678634,
+          -17.789353927975696
+        ],
+        [
+          -62.167199017678634,
+          -17.789399104565277
+        ],
+        [
+          -62.16729327460999,
+          -17.789444281154857
+        ],
+        [
+          -62.168660000114706,
+          -17.78971534069234
+        ],
+        [
+          -62.174268287530595,
+          -17.790799578842268
+        ],
+        [
+          -62.19203571909186,
+          -17.794232999650376
+        ],
+        [
+          -62.198115291164555,
+          -17.795407590979465
+        ],
+        [
+          -62.20443050556564,
+          -17.796627358898135
+        ],
+        [
+          -62.25264292595603,
+          -17.80588855976211
+        ],
+        [
+          -62.30019554782691,
+          -17.815014230857344
+        ],
+        [
+          -62.3020806864541,
+          -17.815375643573987
+        ],
+        [
+          -62.34685272884987,
+          -17.823959195594256
+        ],
+        [
+          -62.35180121774624,
+          -17.824907903975443
+        ],
+        [
+          -62.35345071404504,
+          -17.825224140102506
+        ],
+        [
+          -62.36542134432769,
+          -17.827482969581524
+        ],
+        [
+          -62.365562729724736,
+          -17.827482969581524
+        ],
+        [
+          -62.367777767611685,
+          -17.817318236925942
+        ],
+        [
+          -62.36815479533712,
+          -17.815556349932308
+        ],
+        [
+          -62.38884419177054,
+          -17.718291152565783
+        ],
+        [
+          -62.40986348746371,
+          -17.619038185257722
+        ],
+        [
+          -62.410853185242985,
+          -17.614339819941364
+        ],
+        [
+          -62.410900313708666,
+          -17.614113936993462
+        ],
+        [
+          -62.411418726831144,
+          -17.611629224566542
+        ],
+        [
+          -62.41165436915954,
+          -17.610499809827033
+        ],
+        [
+          -62.4117486260909,
+          -17.61004804393123
+        ]
+      ]
+    ]
+  },
+  "bbox": [
+    -62.41179575455658,
+    -17.827799205708587,
+    -62.16710476074727,
+    -17.571467236429598
+  ],
+  "properties": {
+    "processing:level": "L1B",
+    "processing:facility": "Wyvern",
+    "processing:version": "1.7",
+    "wyvern:radiometric_resolution": "12",
+    "license": "proprietary",
+    "start_datetime": "2025-09-27T14:52:18.802486Z",
+    "end_datetime": "2025-09-27T14:52:22.313158Z",
+    "instruments": [
+      "VNIR Hyperspectral Imaging Sensor"
+    ],
+    "providers": [
+      {
+        "name": "Wyvern Inc.",
+        "roles": [
+          "licensor",
+          "producer",
+          "processor"
+        ],
+        "url": "https://www.wyvern.space/"
+      }
+    ],
+    "platform": "Dragonette-004",
+    "created": "2025-12-17T17:51:23Z",
+    "updated": "2025-12-17T17:51:23Z",
+    "constellation": "Dragonette",
+    "sat:platform_international_designator": "2025-052AW",
+    "view:off_nadir": 5.535625449532388,
+    "view:incidence_angle": 6.3026973981879735,
+    "view:azimuth": 95.88234228752582,
+    "view:sun_azimuth": 48.256348878040725,
+    "view:sun_elevation": 67.0527066665418,
+    "gsd": 5.22,
+    "proj:epsg": 4326,
+    "proj:shape": [
+      5192,
+      5674
+    ],
+    "eo:cloud_cover": 0.02,
+    "sensor_mode": "strip",
+    "sensor_type": "optical",
+    "product_type": "hyperspectral",
+    "datetime": "2025-09-27T14:52:20.557822Z"
+  },
+  "links": [
+    {
+      "rel": "license",
+      "href": "http://www.wyvern.space/wyvern-eula-public-release-license",
+      "title": "Public Release"
+    },
+    {
+      "rel": "parent",
+      "href": "s3://wyvern-prod-static-stac-archive/catalog.json",
+      "type": "application/json"
+    },
+    {
+      "rel": "self",
+      "href": "https://wyvern-prod-public-open-data-program.s3.ca-central-1.amazonaws.com/wyvern_dragonette-004_20250927T145218_edb4d3af/wyvern_dragonette-004_20250927T145218_edb4d3af.json",
+      "type": "application/json"
+    }
+  ],
+  "assets": {
+    "Cloud optimized GeoTiff": {
+      "href": "https://wyvern-prod-public-open-data-program.s3.ca-central-1.amazonaws.com/wyvern_dragonette-004_20250927T145218_edb4d3af/wyvern_dragonette-004_20250927T145218_edb4d3af.tiff",
+      "type": "image/tiff; application=geotiff; profile=cloud-optimized",
+      "title": "Cloud optimized GeoTiff",
+      "description": "Cloud optimized GeoTiff containing Dragonette hyperspectral image data.",
+      "eo:bands": [
+        {
+          "name": "Band_444nm",
+          "common_name": "coastal",
+          "center_wavelength": 0.444,
+          "full_width_half_max": 0.0155,
+          "solar_illumination": 1923.06
+        },
+        {
+          "name": "Band_464nm",
+          "common_name": "blue",
+          "center_wavelength": 0.464,
+          "full_width_half_max": 0.0162,
+          "solar_illumination": 2053.96
+        },
+        {
+          "name": "Band_480nm",
+          "common_name": "blue",
+          "center_wavelength": 0.48,
+          "full_width_half_max": 0.0168,
+          "solar_illumination": 2027.46
+        },
+        {
+          "name": "Band_490nm",
+          "common_name": "blue",
+          "center_wavelength": 0.49,
+          "full_width_half_max": 0.0172,
+          "solar_illumination": 1964.21
+        },
+        {
+          "name": "Band_503nm",
+          "common_name": "green",
+          "center_wavelength": 0.503,
+          "full_width_half_max": 0.0176,
+          "solar_illumination": 1947.23
+        },
+        {
+          "name": "Band_510nm",
+          "common_name": "green",
+          "center_wavelength": 0.51,
+          "full_width_half_max": 0.0179,
+          "solar_illumination": 1882.68
+        },
+        {
+          "name": "Band_520nm",
+          "common_name": "green",
+          "center_wavelength": 0.52,
+          "full_width_half_max": 0.0182,
+          "solar_illumination": 1810.55
+        },
+        {
+          "name": "Band_535nm",
+          "common_name": "green",
+          "center_wavelength": 0.535,
+          "full_width_half_max": 0.0187,
+          "solar_illumination": 1854.06
+        },
+        {
+          "name": "Band_549nm",
+          "common_name": "green",
+          "center_wavelength": 0.549,
+          "full_width_half_max": 0.0192,
+          "solar_illumination": 1854.78
+        },
+        {
+          "name": "Band_569nm",
+          "common_name": "green",
+          "center_wavelength": 0.569,
+          "full_width_half_max": 0.0199,
+          "solar_illumination": 1794.61
+        },
+        {
+          "name": "Band_584nm",
+          "common_name": "yellow",
+          "center_wavelength": 0.584,
+          "full_width_half_max": 0.0204,
+          "solar_illumination": 1777.31
+        },
+        {
+          "name": "Band_600nm",
+          "common_name": "yellow",
+          "center_wavelength": 0.6,
+          "full_width_half_max": 0.021,
+          "solar_illumination": 1738.06
+        },
+        {
+          "name": "Band_615nm",
+          "common_name": "yellow",
+          "center_wavelength": 0.615,
+          "full_width_half_max": 0.0215,
+          "solar_illumination": 1674.12
+        },
+        {
+          "name": "Band_634nm",
+          "common_name": "red",
+          "center_wavelength": 0.634,
+          "full_width_half_max": 0.0222,
+          "solar_illumination": 1628.19
+        },
+        {
+          "name": "Band_650nm",
+          "common_name": "red",
+          "center_wavelength": 0.65,
+          "full_width_half_max": 0.0228,
+          "solar_illumination": 1554.24
+        },
+        {
+          "name": "Band_659nm",
+          "common_name": "red",
+          "center_wavelength": 0.659,
+          "full_width_half_max": 0.0231,
+          "solar_illumination": 1527.56
+        },
+        {
+          "name": "Band_669nm",
+          "common_name": "red",
+          "center_wavelength": 0.669,
+          "full_width_half_max": 0.0234,
+          "solar_illumination": 1511.92
+        },
+        {
+          "name": "Band_680nm",
+          "common_name": "red",
+          "center_wavelength": 0.68,
+          "full_width_half_max": 0.0238,
+          "solar_illumination": 1480.28
+        },
+        {
+          "name": "Band_690nm",
+          "common_name": "red",
+          "center_wavelength": 0.69,
+          "full_width_half_max": 0.0242,
+          "solar_illumination": 1458.01
+        },
+        {
+          "name": "Band_699nm",
+          "common_name": "red",
+          "center_wavelength": 0.699,
+          "full_width_half_max": 0.0245,
+          "solar_illumination": 1440.71
+        },
+        {
+          "name": "Band_711nm",
+          "common_name": "rededge",
+          "center_wavelength": 0.711,
+          "full_width_half_max": 0.0249,
+          "solar_illumination": 1393.74
+        },
+        {
+          "name": "Band_722nm",
+          "common_name": "rededge",
+          "center_wavelength": 0.722,
+          "full_width_half_max": 0.0253,
+          "solar_illumination": 1350.78
+        },
+        {
+          "name": "Band_735nm",
+          "common_name": "rededge",
+          "center_wavelength": 0.735,
+          "full_width_half_max": 0.0257,
+          "solar_illumination": 1307.6
+        },
+        {
+          "name": "Band_750nm",
+          "common_name": "rededge",
+          "center_wavelength": 0.75,
+          "full_width_half_max": 0.0263,
+          "solar_illumination": 1269.76
+        },
+        {
+          "name": "Band_765nm",
+          "common_name": "rededge",
+          "center_wavelength": 0.765,
+          "full_width_half_max": 0.0268,
+          "solar_illumination": 1234.26
+        },
+        {
+          "name": "Band_782nm",
+          "common_name": "rededge",
+          "center_wavelength": 0.782,
+          "full_width_half_max": 0.0274,
+          "solar_illumination": 1167.72
+        },
+        {
+          "name": "Band_799nm",
+          "common_name": "nir",
+          "center_wavelength": 0.799,
+          "full_width_half_max": 0.028,
+          "solar_illumination": 1124.46
+        },
+        {
+          "name": "Band_815nm",
+          "common_name": "nir",
+          "center_wavelength": 0.815,
+          "full_width_half_max": 0.0285,
+          "solar_illumination": 1091.48
+        },
+        {
+          "name": "Band_832nm",
+          "common_name": "nir",
+          "center_wavelength": 0.832,
+          "full_width_half_max": 0.0291,
+          "solar_illumination": 1045.41
+        },
+        {
+          "name": "Band_850nm",
+          "common_name": "nir",
+          "center_wavelength": 0.85,
+          "full_width_half_max": 0.0298,
+          "solar_illumination": 985.59
+        },
+        {
+          "name": "Band_870nm",
+          "common_name": "nir",
+          "center_wavelength": 0.87,
+          "full_width_half_max": 0.0305,
+          "solar_illumination": 955.64
+        }
+      ],
+      "raster:bands": [
+        {
+          "nodata": -9999,
+          "sampling": "area",
+          "data_type": "float32",
+          "unit": "W⋅sr-1⋅m-2⋅µm-1",
+          "scale": 1.0,
+          "offset": 0.0
+        },
+        {
+          "nodata": -9999,
+          "sampling": "area",
+          "data_type": "float32",
+          "unit": "W⋅sr-1⋅m-2⋅µm-1",
+          "scale": 1.0,
+          "offset": 0.0
+        },
+        {
+          "nodata": -9999,
+          "sampling": "area",
+          "data_type": "float32",
+          "unit": "W⋅sr-1⋅m-2⋅µm-1",
+          "scale": 1.0,
+          "offset": 0.0
+        },
+        {
+          "nodata": -9999,
+          "sampling": "area",
+          "data_type": "float32",
+          "unit": "W⋅sr-1⋅m-2⋅µm-1",
+          "scale": 1.0,
+          "offset": 0.0
+        },
+        {
+          "nodata": -9999,
+          "sampling": "area",
+          "data_type": "float32",
+          "unit": "W⋅sr-1⋅m-2⋅µm-1",
+          "scale": 1.0,
+          "offset": 0.0
+        },
+        {
+          "nodata": -9999,
+          "sampling": "area",
+          "data_type": "float32",
+          "unit": "W⋅sr-1⋅m-2⋅µm-1",
+          "scale": 1.0,
+          "offset": 0.0
+        },
+        {
+          "nodata": -9999,
+          "sampling": "area",
+          "data_type": "float32",
+          "unit": "W⋅sr-1⋅m-2⋅µm-1",
+          "scale": 1.0,
+          "offset": 0.0
+        },
+        {
+          "nodata": -9999,
+          "sampling": "area",
+          "data_type": "float32",
+          "unit": "W⋅sr-1⋅m-2⋅µm-1",
+          "scale": 1.0,
+          "offset": 0.0
+        },
+        {
+          "nodata": -9999,
+          "sampling": "area",
+          "data_type": "float32",
+          "unit": "W⋅sr-1⋅m-2⋅µm-1",
+          "scale": 1.0,
+          "offset": 0.0
+        },
+        {
+          "nodata": -9999,
+          "sampling": "area",
+          "data_type": "float32",
+          "unit": "W⋅sr-1⋅m-2⋅µm-1",
+          "scale": 1.0,
+          "offset": 0.0
+        },
+        {
+          "nodata": -9999,
+          "sampling": "area",
+          "data_type": "float32",
+          "unit": "W⋅sr-1⋅m-2⋅µm-1",
+          "scale": 1.0,
+          "offset": 0.0
+        },
+        {
+          "nodata": -9999,
+          "sampling": "area",
+          "data_type": "float32",
+          "unit": "W⋅sr-1⋅m-2⋅µm-1",
+          "scale": 1.0,
+          "offset": 0.0
+        },
+        {
+          "nodata": -9999,
+          "sampling": "area",
+          "data_type": "float32",
+          "unit": "W⋅sr-1⋅m-2⋅µm-1",
+          "scale": 1.0,
+          "offset": 0.0
+        },
+        {
+          "nodata": -9999,
+          "sampling": "area",
+          "data_type": "float32",
+          "unit": "W⋅sr-1⋅m-2⋅µm-1",
+          "scale": 1.0,
+          "offset": 0.0
+        },
+        {
+          "nodata": -9999,
+          "sampling": "area",
+          "data_type": "float32",
+          "unit": "W⋅sr-1⋅m-2⋅µm-1",
+          "scale": 1.0,
+          "offset": 0.0
+        },
+        {
+          "nodata": -9999,
+          "sampling": "area",
+          "data_type": "float32",
+          "unit": "W⋅sr-1⋅m-2⋅µm-1",
+          "scale": 1.0,
+          "offset": 0.0
+        },
+        {
+          "nodata": -9999,
+          "sampling": "area",
+          "data_type": "float32",
+          "unit": "W⋅sr-1⋅m-2⋅µm-1",
+          "scale": 1.0,
+          "offset": 0.0
+        },
+        {
+          "nodata": -9999,
+          "sampling": "area",
+          "data_type": "float32",
+          "unit": "W⋅sr-1⋅m-2⋅µm-1",
+          "scale": 1.0,
+          "offset": 0.0
+        },
+        {
+          "nodata": -9999,
+          "sampling": "area",
+          "data_type": "float32",
+          "unit": "W⋅sr-1⋅m-2⋅µm-1",
+          "scale": 1.0,
+          "offset": 0.0
+        },
+        {
+          "nodata": -9999,
+          "sampling": "area",
+          "data_type": "float32",
+          "unit": "W⋅sr-1⋅m-2⋅µm-1",
+          "scale": 1.0,
+          "offset": 0.0
+        },
+        {
+          "nodata": -9999,
+          "sampling": "area",
+          "data_type": "float32",
+          "unit": "W⋅sr-1⋅m-2⋅µm-1",
+          "scale": 1.0,
+          "offset": 0.0
+        },
+        {
+          "nodata": -9999,
+          "sampling": "area",
+          "data_type": "float32",
+          "unit": "W⋅sr-1⋅m-2⋅µm-1",
+          "scale": 1.0,
+          "offset": 0.0
+        },
+        {
+          "nodata": -9999,
+          "sampling": "area",
+          "data_type": "float32",
+          "unit": "W⋅sr-1⋅m-2⋅µm-1",
+          "scale": 1.0,
+          "offset": 0.0
+        },
+        {
+          "nodata": -9999,
+          "sampling": "area",
+          "data_type": "float32",
+          "unit": "W⋅sr-1⋅m-2⋅µm-1",
+          "scale": 1.0,
+          "offset": 0.0
+        },
+        {
+          "nodata": -9999,
+          "sampling": "area",
+          "data_type": "float32",
+          "unit": "W⋅sr-1⋅m-2⋅µm-1",
+          "scale": 1.0,
+          "offset": 0.0
+        },
+        {
+          "nodata": -9999,
+          "sampling": "area",
+          "data_type": "float32",
+          "unit": "W⋅sr-1⋅m-2⋅µm-1",
+          "scale": 1.0,
+          "offset": 0.0
+        },
+        {
+          "nodata": -9999,
+          "sampling": "area",
+          "data_type": "float32",
+          "unit": "W⋅sr-1⋅m-2⋅µm-1",
+          "scale": 1.0,
+          "offset": 0.0
+        },
+        {
+          "nodata": -9999,
+          "sampling": "area",
+          "data_type": "float32",
+          "unit": "W⋅sr-1⋅m-2⋅µm-1",
+          "scale": 1.0,
+          "offset": 0.0
+        },
+        {
+          "nodata": -9999,
+          "sampling": "area",
+          "data_type": "float32",
+          "unit": "W⋅sr-1⋅m-2⋅µm-1",
+          "scale": 1.0,
+          "offset": 0.0
+        },
+        {
+          "nodata": -9999,
+          "sampling": "area",
+          "data_type": "float32",
+          "unit": "W⋅sr-1⋅m-2⋅µm-1",
+          "scale": 1.0,
+          "offset": 0.0
+        },
+        {
+          "nodata": -9999,
+          "sampling": "area",
+          "data_type": "float32",
+          "unit": "W⋅sr-1⋅m-2⋅µm-1",
+          "scale": 1.0,
+          "offset": 0.0
+        }
+      ],
+      "file:checksum": "c0e402404f2aa53909b06e57aa1937723587d464778df899515ddf5342429bee610fbb87812cff4125fdf5fe8005ec06997e067ebe30eb2f123d70a62d1bc2954925a6ec",
+      "file:size": 3671499940,
+      "roles": [
+        "data"
+      ]
+    },
+    "Overview image": {
+      "href": "https://wyvern-prod-public-open-data-program.s3.ca-central-1.amazonaws.com/wyvern_dragonette-004_20250927T145218_edb4d3af/wyvern_dragonette-004_20250927T145218_edb4d3af_preview.png",
+      "type": "image/png",
+      "title": "Overview image",
+      "description": "A full resolution, approximate true color image.",
+      "eo:bands": [
+        {
+          "name": "Band_480nm",
+          "common_name": "blue",
+          "center_wavelength": 0.48,
+          "full_width_half_max": 0.0168
+        },
+        {
+          "name": "Band_535nm",
+          "common_name": "green",
+          "center_wavelength": 0.535,
+          "full_width_half_max": 0.0187
+        },
+        {
+          "name": "Band_680nm",
+          "common_name": "red",
+          "center_wavelength": 0.68,
+          "full_width_half_max": 0.0238
+        }
+      ],
+      "raster:bands": [
+        {
+          "nodata": 0,
+          "sampling": "area",
+          "data_type": "int8"
+        },
+        {
+          "nodata": 0,
+          "sampling": "area",
+          "data_type": "int8"
+        },
+        {
+          "nodata": 0,
+          "sampling": "area",
+          "data_type": "int8"
+        }
+      ],
+      "file:checksum": "c0e402409e079567617465a5033769ee3b938a87b3a1ea1a859f214a49596e585a14693fd84461f84ad203e5c9eff50e8fc95809ca7cbb5d30999e6ef0da252a9642ff7c",
+      "file:size": 4832348,
+      "roles": [
+        "overview"
+      ]
+    },
+    "Thumbnail image": {
+      "href": "https://wyvern-prod-public-open-data-program.s3.ca-central-1.amazonaws.com/wyvern_dragonette-004_20250927T145218_edb4d3af/wyvern_dragonette-004_20250927T145218_edb4d3af_thumbnail.png",
+      "type": "image/png",
+      "title": "Thumbnail image",
+      "description": "A low resolution, approximate true color image.",
+      "eo:bands": [
+        {
+          "name": "Band_480nm",
+          "common_name": "blue",
+          "center_wavelength": 0.48,
+          "full_width_half_max": 0.0168
+        },
+        {
+          "name": "Band_535nm",
+          "common_name": "green",
+          "center_wavelength": 0.535,
+          "full_width_half_max": 0.0187
+        },
+        {
+          "name": "Band_680nm",
+          "common_name": "red",
+          "center_wavelength": 0.68,
+          "full_width_half_max": 0.0238
+        }
+      ],
+      "raster:bands": [
+        {
+          "nodata": 0,
+          "sampling": "area",
+          "data_type": "int8"
+        },
+        {
+          "nodata": 0,
+          "sampling": "area",
+          "data_type": "int8"
+        },
+        {
+          "nodata": 0,
+          "sampling": "area",
+          "data_type": "int8"
+        }
+      ],
+      "file:checksum": "c0e40240b7701fa09dc2a0bf6de1a9e7744f6ec929e960b05b65aa66c33549ae1deebda6a3ce5c48e7beb84dc4dac90aed21b32dcd71ce7435c42bfc513dc7f19b4fd9d9",
+      "file:size": 371535,
+      "roles": [
+        "thumbnail"
+      ]
+    },
+    "Data Mask": {
+      "href": "https://wyvern-prod-public-open-data-program.s3.ca-central-1.amazonaws.com/wyvern_dragonette-004_20250927T145218_edb4d3af/wyvern_dragonette-004_20250927T145218_edb4d3af_data_mask.tiff",
+      "type": "image/tiff; application=geotiff; profile=cloud-optimized",
+      "title": "Data Mask",
+      "description": "A mask containing clear/usable data.",
+      "eo:bands": [
+        {
+          "name": "QA_CLEAR_MASK",
+          "description": "Boolean clear mask, 1 == Clear pixel"
+        },
+        {
+          "name": "QA_CLOUD_MASK",
+          "description": "Boolean cloud mask, 1 == Cloudy pixel"
+        },
+        {
+          "name": "QA_HAZE_MASK",
+          "description": "Boolean haze mask, 1 == Hazy pixel"
+        },
+        {
+          "name": "QA_CLOUD_SHADOW_MASK",
+          "description": "Boolean cloud-shadow mask, 1 == Cloud-shadowed pixel"
+        }
+      ],
+      "raster:bands": [
+        {
+          "nodata": 255,
+          "sampling": "area",
+          "data_type": "uint8"
+        },
+        {
+          "nodata": 255,
+          "sampling": "area",
+          "data_type": "uint8"
+        },
+        {
+          "nodata": 255,
+          "sampling": "area",
+          "data_type": "uint8"
+        },
+        {
+          "nodata": 255,
+          "sampling": "area",
+          "data_type": "uint8"
+        }
+      ],
+      "file:checksum": "c0e4024052ebd237ddfeabde2985734087003efba071a9d9524f34047612e42bd1fd2663f7fb8d38dcf073099df3ea654dbcf64d339407718179719273fd4ecc1582aaee",
+      "file:size": 818781,
+      "roles": [
+        "data-mask",
+        "clear",
+        "cloud",
+        "haze",
+        "cloud-shadow"
+      ]
+    },
+    "Pixel Quality Mask": {
+      "href": "https://wyvern-prod-public-open-data-program.s3.ca-central-1.amazonaws.com/wyvern_dragonette-004_20250927T145218_edb4d3af/wyvern_dragonette-004_20250927T145218_edb4d3af_pixel_quality_mask.tiff",
+      "type": "image/tiff; application=geotiff; profile=cloud-optimized",
+      "title": "Pixel Quality Mask",
+      "description": "A mask containing information about pixel quality.",
+      "eo:bands": [
+        {
+          "name": "Band_444nm Pixel Quality Mask",
+          "description": "A mask with values indicating pixel quality issues for Band_444nm"
+        },
+        {
+          "name": "Band_464nm Pixel Quality Mask",
+          "description": "A mask with values indicating pixel quality issues for Band_464nm"
+        },
+        {
+          "name": "Band_480nm Pixel Quality Mask",
+          "description": "A mask with values indicating pixel quality issues for Band_480nm"
+        },
+        {
+          "name": "Band_490nm Pixel Quality Mask",
+          "description": "A mask with values indicating pixel quality issues for Band_490nm"
+        },
+        {
+          "name": "Band_503nm Pixel Quality Mask",
+          "description": "A mask with values indicating pixel quality issues for Band_503nm"
+        },
+        {
+          "name": "Band_510nm Pixel Quality Mask",
+          "description": "A mask with values indicating pixel quality issues for Band_510nm"
+        },
+        {
+          "name": "Band_520nm Pixel Quality Mask",
+          "description": "A mask with values indicating pixel quality issues for Band_520nm"
+        },
+        {
+          "name": "Band_535nm Pixel Quality Mask",
+          "description": "A mask with values indicating pixel quality issues for Band_535nm"
+        },
+        {
+          "name": "Band_549nm Pixel Quality Mask",
+          "description": "A mask with values indicating pixel quality issues for Band_549nm"
+        },
+        {
+          "name": "Band_569nm Pixel Quality Mask",
+          "description": "A mask with values indicating pixel quality issues for Band_569nm"
+        },
+        {
+          "name": "Band_584nm Pixel Quality Mask",
+          "description": "A mask with values indicating pixel quality issues for Band_584nm"
+        },
+        {
+          "name": "Band_600nm Pixel Quality Mask",
+          "description": "A mask with values indicating pixel quality issues for Band_600nm"
+        },
+        {
+          "name": "Band_615nm Pixel Quality Mask",
+          "description": "A mask with values indicating pixel quality issues for Band_615nm"
+        },
+        {
+          "name": "Band_634nm Pixel Quality Mask",
+          "description": "A mask with values indicating pixel quality issues for Band_634nm"
+        },
+        {
+          "name": "Band_650nm Pixel Quality Mask",
+          "description": "A mask with values indicating pixel quality issues for Band_650nm"
+        },
+        {
+          "name": "Band_659nm Pixel Quality Mask",
+          "description": "A mask with values indicating pixel quality issues for Band_659nm"
+        },
+        {
+          "name": "Band_669nm Pixel Quality Mask",
+          "description": "A mask with values indicating pixel quality issues for Band_669nm"
+        },
+        {
+          "name": "Band_680nm Pixel Quality Mask",
+          "description": "A mask with values indicating pixel quality issues for Band_680nm"
+        },
+        {
+          "name": "Band_690nm Pixel Quality Mask",
+          "description": "A mask with values indicating pixel quality issues for Band_690nm"
+        },
+        {
+          "name": "Band_699nm Pixel Quality Mask",
+          "description": "A mask with values indicating pixel quality issues for Band_699nm"
+        },
+        {
+          "name": "Band_711nm Pixel Quality Mask",
+          "description": "A mask with values indicating pixel quality issues for Band_711nm"
+        },
+        {
+          "name": "Band_722nm Pixel Quality Mask",
+          "description": "A mask with values indicating pixel quality issues for Band_722nm"
+        },
+        {
+          "name": "Band_735nm Pixel Quality Mask",
+          "description": "A mask with values indicating pixel quality issues for Band_735nm"
+        },
+        {
+          "name": "Band_750nm Pixel Quality Mask",
+          "description": "A mask with values indicating pixel quality issues for Band_750nm"
+        },
+        {
+          "name": "Band_765nm Pixel Quality Mask",
+          "description": "A mask with values indicating pixel quality issues for Band_765nm"
+        },
+        {
+          "name": "Band_782nm Pixel Quality Mask",
+          "description": "A mask with values indicating pixel quality issues for Band_782nm"
+        },
+        {
+          "name": "Band_799nm Pixel Quality Mask",
+          "description": "A mask with values indicating pixel quality issues for Band_799nm"
+        },
+        {
+          "name": "Band_815nm Pixel Quality Mask",
+          "description": "A mask with values indicating pixel quality issues for Band_815nm"
+        },
+        {
+          "name": "Band_832nm Pixel Quality Mask",
+          "description": "A mask with values indicating pixel quality issues for Band_832nm"
+        },
+        {
+          "name": "Band_850nm Pixel Quality Mask",
+          "description": "A mask with values indicating pixel quality issues for Band_850nm"
+        },
+        {
+          "name": "Band_870nm Pixel Quality Mask",
+          "description": "A mask with values indicating pixel quality issues for Band_870nm"
+        }
+      ],
+      "raster:bands": [
+        {
+          "nodata": 255,
+          "sampling": "area",
+          "data_type": "uint8",
+          "classification:classes": [
+            {
+              "value": 0,
+              "name": "no-pixel-quality-condition",
+              "description": "The pixel has no documented quality condition in Band_444nm"
+            },
+            {
+              "value": 1,
+              "name": "interpolated",
+              "description": "The pixel value has been estimated from nearby measurements in Band_444nm"
+            },
+            {
+              "value": 255,
+              "name": "nodata",
+              "description": "The pixel is NoData in Band_444nm",
+              "nodata": true
+            }
+          ]
+        },
+        {
+          "nodata": 255,
+          "sampling": "area",
+          "data_type": "uint8",
+          "classification:classes": [
+            {
+              "value": 0,
+              "name": "no-pixel-quality-condition",
+              "description": "The pixel has no documented quality condition in Band_464nm"
+            },
+            {
+              "value": 1,
+              "name": "interpolated",
+              "description": "The pixel value has been estimated from nearby measurements in Band_464nm"
+            },
+            {
+              "value": 255,
+              "name": "nodata",
+              "description": "The pixel is NoData in Band_464nm",
+              "nodata": true
+            }
+          ]
+        },
+        {
+          "nodata": 255,
+          "sampling": "area",
+          "data_type": "uint8",
+          "classification:classes": [
+            {
+              "value": 0,
+              "name": "no-pixel-quality-condition",
+              "description": "The pixel has no documented quality condition in Band_480nm"
+            },
+            {
+              "value": 1,
+              "name": "interpolated",
+              "description": "The pixel value has been estimated from nearby measurements in Band_480nm"
+            },
+            {
+              "value": 255,
+              "name": "nodata",
+              "description": "The pixel is NoData in Band_480nm",
+              "nodata": true
+            }
+          ]
+        },
+        {
+          "nodata": 255,
+          "sampling": "area",
+          "data_type": "uint8",
+          "classification:classes": [
+            {
+              "value": 0,
+              "name": "no-pixel-quality-condition",
+              "description": "The pixel has no documented quality condition in Band_490nm"
+            },
+            {
+              "value": 1,
+              "name": "interpolated",
+              "description": "The pixel value has been estimated from nearby measurements in Band_490nm"
+            },
+            {
+              "value": 255,
+              "name": "nodata",
+              "description": "The pixel is NoData in Band_490nm",
+              "nodata": true
+            }
+          ]
+        },
+        {
+          "nodata": 255,
+          "sampling": "area",
+          "data_type": "uint8",
+          "classification:classes": [
+            {
+              "value": 0,
+              "name": "no-pixel-quality-condition",
+              "description": "The pixel has no documented quality condition in Band_503nm"
+            },
+            {
+              "value": 1,
+              "name": "interpolated",
+              "description": "The pixel value has been estimated from nearby measurements in Band_503nm"
+            },
+            {
+              "value": 255,
+              "name": "nodata",
+              "description": "The pixel is NoData in Band_503nm",
+              "nodata": true
+            }
+          ]
+        },
+        {
+          "nodata": 255,
+          "sampling": "area",
+          "data_type": "uint8",
+          "classification:classes": [
+            {
+              "value": 0,
+              "name": "no-pixel-quality-condition",
+              "description": "The pixel has no documented quality condition in Band_510nm"
+            },
+            {
+              "value": 1,
+              "name": "interpolated",
+              "description": "The pixel value has been estimated from nearby measurements in Band_510nm"
+            },
+            {
+              "value": 255,
+              "name": "nodata",
+              "description": "The pixel is NoData in Band_510nm",
+              "nodata": true
+            }
+          ]
+        },
+        {
+          "nodata": 255,
+          "sampling": "area",
+          "data_type": "uint8",
+          "classification:classes": [
+            {
+              "value": 0,
+              "name": "no-pixel-quality-condition",
+              "description": "The pixel has no documented quality condition in Band_520nm"
+            },
+            {
+              "value": 1,
+              "name": "interpolated",
+              "description": "The pixel value has been estimated from nearby measurements in Band_520nm"
+            },
+            {
+              "value": 255,
+              "name": "nodata",
+              "description": "The pixel is NoData in Band_520nm",
+              "nodata": true
+            }
+          ]
+        },
+        {
+          "nodata": 255,
+          "sampling": "area",
+          "data_type": "uint8",
+          "classification:classes": [
+            {
+              "value": 0,
+              "name": "no-pixel-quality-condition",
+              "description": "The pixel has no documented quality condition in Band_535nm"
+            },
+            {
+              "value": 1,
+              "name": "interpolated",
+              "description": "The pixel value has been estimated from nearby measurements in Band_535nm"
+            },
+            {
+              "value": 255,
+              "name": "nodata",
+              "description": "The pixel is NoData in Band_535nm",
+              "nodata": true
+            }
+          ]
+        },
+        {
+          "nodata": 255,
+          "sampling": "area",
+          "data_type": "uint8",
+          "classification:classes": [
+            {
+              "value": 0,
+              "name": "no-pixel-quality-condition",
+              "description": "The pixel has no documented quality condition in Band_549nm"
+            },
+            {
+              "value": 1,
+              "name": "interpolated",
+              "description": "The pixel value has been estimated from nearby measurements in Band_549nm"
+            },
+            {
+              "value": 255,
+              "name": "nodata",
+              "description": "The pixel is NoData in Band_549nm",
+              "nodata": true
+            }
+          ]
+        },
+        {
+          "nodata": 255,
+          "sampling": "area",
+          "data_type": "uint8",
+          "classification:classes": [
+            {
+              "value": 0,
+              "name": "no-pixel-quality-condition",
+              "description": "The pixel has no documented quality condition in Band_569nm"
+            },
+            {
+              "value": 1,
+              "name": "interpolated",
+              "description": "The pixel value has been estimated from nearby measurements in Band_569nm"
+            },
+            {
+              "value": 255,
+              "name": "nodata",
+              "description": "The pixel is NoData in Band_569nm",
+              "nodata": true
+            }
+          ]
+        },
+        {
+          "nodata": 255,
+          "sampling": "area",
+          "data_type": "uint8",
+          "classification:classes": [
+            {
+              "value": 0,
+              "name": "no-pixel-quality-condition",
+              "description": "The pixel has no documented quality condition in Band_584nm"
+            },
+            {
+              "value": 1,
+              "name": "interpolated",
+              "description": "The pixel value has been estimated from nearby measurements in Band_584nm"
+            },
+            {
+              "value": 255,
+              "name": "nodata",
+              "description": "The pixel is NoData in Band_584nm",
+              "nodata": true
+            }
+          ]
+        },
+        {
+          "nodata": 255,
+          "sampling": "area",
+          "data_type": "uint8",
+          "classification:classes": [
+            {
+              "value": 0,
+              "name": "no-pixel-quality-condition",
+              "description": "The pixel has no documented quality condition in Band_600nm"
+            },
+            {
+              "value": 1,
+              "name": "interpolated",
+              "description": "The pixel value has been estimated from nearby measurements in Band_600nm"
+            },
+            {
+              "value": 255,
+              "name": "nodata",
+              "description": "The pixel is NoData in Band_600nm",
+              "nodata": true
+            }
+          ]
+        },
+        {
+          "nodata": 255,
+          "sampling": "area",
+          "data_type": "uint8",
+          "classification:classes": [
+            {
+              "value": 0,
+              "name": "no-pixel-quality-condition",
+              "description": "The pixel has no documented quality condition in Band_615nm"
+            },
+            {
+              "value": 1,
+              "name": "interpolated",
+              "description": "The pixel value has been estimated from nearby measurements in Band_615nm"
+            },
+            {
+              "value": 255,
+              "name": "nodata",
+              "description": "The pixel is NoData in Band_615nm",
+              "nodata": true
+            }
+          ]
+        },
+        {
+          "nodata": 255,
+          "sampling": "area",
+          "data_type": "uint8",
+          "classification:classes": [
+            {
+              "value": 0,
+              "name": "no-pixel-quality-condition",
+              "description": "The pixel has no documented quality condition in Band_634nm"
+            },
+            {
+              "value": 1,
+              "name": "interpolated",
+              "description": "The pixel value has been estimated from nearby measurements in Band_634nm"
+            },
+            {
+              "value": 255,
+              "name": "nodata",
+              "description": "The pixel is NoData in Band_634nm",
+              "nodata": true
+            }
+          ]
+        },
+        {
+          "nodata": 255,
+          "sampling": "area",
+          "data_type": "uint8",
+          "classification:classes": [
+            {
+              "value": 0,
+              "name": "no-pixel-quality-condition",
+              "description": "The pixel has no documented quality condition in Band_650nm"
+            },
+            {
+              "value": 1,
+              "name": "interpolated",
+              "description": "The pixel value has been estimated from nearby measurements in Band_650nm"
+            },
+            {
+              "value": 255,
+              "name": "nodata",
+              "description": "The pixel is NoData in Band_650nm",
+              "nodata": true
+            }
+          ]
+        },
+        {
+          "nodata": 255,
+          "sampling": "area",
+          "data_type": "uint8",
+          "classification:classes": [
+            {
+              "value": 0,
+              "name": "no-pixel-quality-condition",
+              "description": "The pixel has no documented quality condition in Band_659nm"
+            },
+            {
+              "value": 1,
+              "name": "interpolated",
+              "description": "The pixel value has been estimated from nearby measurements in Band_659nm"
+            },
+            {
+              "value": 255,
+              "name": "nodata",
+              "description": "The pixel is NoData in Band_659nm",
+              "nodata": true
+            }
+          ]
+        },
+        {
+          "nodata": 255,
+          "sampling": "area",
+          "data_type": "uint8",
+          "classification:classes": [
+            {
+              "value": 0,
+              "name": "no-pixel-quality-condition",
+              "description": "The pixel has no documented quality condition in Band_669nm"
+            },
+            {
+              "value": 1,
+              "name": "interpolated",
+              "description": "The pixel value has been estimated from nearby measurements in Band_669nm"
+            },
+            {
+              "value": 255,
+              "name": "nodata",
+              "description": "The pixel is NoData in Band_669nm",
+              "nodata": true
+            }
+          ]
+        },
+        {
+          "nodata": 255,
+          "sampling": "area",
+          "data_type": "uint8",
+          "classification:classes": [
+            {
+              "value": 0,
+              "name": "no-pixel-quality-condition",
+              "description": "The pixel has no documented quality condition in Band_680nm"
+            },
+            {
+              "value": 1,
+              "name": "interpolated",
+              "description": "The pixel value has been estimated from nearby measurements in Band_680nm"
+            },
+            {
+              "value": 255,
+              "name": "nodata",
+              "description": "The pixel is NoData in Band_680nm",
+              "nodata": true
+            }
+          ]
+        },
+        {
+          "nodata": 255,
+          "sampling": "area",
+          "data_type": "uint8",
+          "classification:classes": [
+            {
+              "value": 0,
+              "name": "no-pixel-quality-condition",
+              "description": "The pixel has no documented quality condition in Band_690nm"
+            },
+            {
+              "value": 1,
+              "name": "interpolated",
+              "description": "The pixel value has been estimated from nearby measurements in Band_690nm"
+            },
+            {
+              "value": 255,
+              "name": "nodata",
+              "description": "The pixel is NoData in Band_690nm",
+              "nodata": true
+            }
+          ]
+        },
+        {
+          "nodata": 255,
+          "sampling": "area",
+          "data_type": "uint8",
+          "classification:classes": [
+            {
+              "value": 0,
+              "name": "no-pixel-quality-condition",
+              "description": "The pixel has no documented quality condition in Band_699nm"
+            },
+            {
+              "value": 1,
+              "name": "interpolated",
+              "description": "The pixel value has been estimated from nearby measurements in Band_699nm"
+            },
+            {
+              "value": 255,
+              "name": "nodata",
+              "description": "The pixel is NoData in Band_699nm",
+              "nodata": true
+            }
+          ]
+        },
+        {
+          "nodata": 255,
+          "sampling": "area",
+          "data_type": "uint8",
+          "classification:classes": [
+            {
+              "value": 0,
+              "name": "no-pixel-quality-condition",
+              "description": "The pixel has no documented quality condition in Band_711nm"
+            },
+            {
+              "value": 1,
+              "name": "interpolated",
+              "description": "The pixel value has been estimated from nearby measurements in Band_711nm"
+            },
+            {
+              "value": 255,
+              "name": "nodata",
+              "description": "The pixel is NoData in Band_711nm",
+              "nodata": true
+            }
+          ]
+        },
+        {
+          "nodata": 255,
+          "sampling": "area",
+          "data_type": "uint8",
+          "classification:classes": [
+            {
+              "value": 0,
+              "name": "no-pixel-quality-condition",
+              "description": "The pixel has no documented quality condition in Band_722nm"
+            },
+            {
+              "value": 1,
+              "name": "interpolated",
+              "description": "The pixel value has been estimated from nearby measurements in Band_722nm"
+            },
+            {
+              "value": 255,
+              "name": "nodata",
+              "description": "The pixel is NoData in Band_722nm",
+              "nodata": true
+            }
+          ]
+        },
+        {
+          "nodata": 255,
+          "sampling": "area",
+          "data_type": "uint8",
+          "classification:classes": [
+            {
+              "value": 0,
+              "name": "no-pixel-quality-condition",
+              "description": "The pixel has no documented quality condition in Band_735nm"
+            },
+            {
+              "value": 1,
+              "name": "interpolated",
+              "description": "The pixel value has been estimated from nearby measurements in Band_735nm"
+            },
+            {
+              "value": 255,
+              "name": "nodata",
+              "description": "The pixel is NoData in Band_735nm",
+              "nodata": true
+            }
+          ]
+        },
+        {
+          "nodata": 255,
+          "sampling": "area",
+          "data_type": "uint8",
+          "classification:classes": [
+            {
+              "value": 0,
+              "name": "no-pixel-quality-condition",
+              "description": "The pixel has no documented quality condition in Band_750nm"
+            },
+            {
+              "value": 1,
+              "name": "interpolated",
+              "description": "The pixel value has been estimated from nearby measurements in Band_750nm"
+            },
+            {
+              "value": 255,
+              "name": "nodata",
+              "description": "The pixel is NoData in Band_750nm",
+              "nodata": true
+            }
+          ]
+        },
+        {
+          "nodata": 255,
+          "sampling": "area",
+          "data_type": "uint8",
+          "classification:classes": [
+            {
+              "value": 0,
+              "name": "no-pixel-quality-condition",
+              "description": "The pixel has no documented quality condition in Band_765nm"
+            },
+            {
+              "value": 1,
+              "name": "interpolated",
+              "description": "The pixel value has been estimated from nearby measurements in Band_765nm"
+            },
+            {
+              "value": 255,
+              "name": "nodata",
+              "description": "The pixel is NoData in Band_765nm",
+              "nodata": true
+            }
+          ]
+        },
+        {
+          "nodata": 255,
+          "sampling": "area",
+          "data_type": "uint8",
+          "classification:classes": [
+            {
+              "value": 0,
+              "name": "no-pixel-quality-condition",
+              "description": "The pixel has no documented quality condition in Band_782nm"
+            },
+            {
+              "value": 1,
+              "name": "interpolated",
+              "description": "The pixel value has been estimated from nearby measurements in Band_782nm"
+            },
+            {
+              "value": 255,
+              "name": "nodata",
+              "description": "The pixel is NoData in Band_782nm",
+              "nodata": true
+            }
+          ]
+        },
+        {
+          "nodata": 255,
+          "sampling": "area",
+          "data_type": "uint8",
+          "classification:classes": [
+            {
+              "value": 0,
+              "name": "no-pixel-quality-condition",
+              "description": "The pixel has no documented quality condition in Band_799nm"
+            },
+            {
+              "value": 1,
+              "name": "interpolated",
+              "description": "The pixel value has been estimated from nearby measurements in Band_799nm"
+            },
+            {
+              "value": 255,
+              "name": "nodata",
+              "description": "The pixel is NoData in Band_799nm",
+              "nodata": true
+            }
+          ]
+        },
+        {
+          "nodata": 255,
+          "sampling": "area",
+          "data_type": "uint8",
+          "classification:classes": [
+            {
+              "value": 0,
+              "name": "no-pixel-quality-condition",
+              "description": "The pixel has no documented quality condition in Band_815nm"
+            },
+            {
+              "value": 1,
+              "name": "interpolated",
+              "description": "The pixel value has been estimated from nearby measurements in Band_815nm"
+            },
+            {
+              "value": 255,
+              "name": "nodata",
+              "description": "The pixel is NoData in Band_815nm",
+              "nodata": true
+            }
+          ]
+        },
+        {
+          "nodata": 255,
+          "sampling": "area",
+          "data_type": "uint8",
+          "classification:classes": [
+            {
+              "value": 0,
+              "name": "no-pixel-quality-condition",
+              "description": "The pixel has no documented quality condition in Band_832nm"
+            },
+            {
+              "value": 1,
+              "name": "interpolated",
+              "description": "The pixel value has been estimated from nearby measurements in Band_832nm"
+            },
+            {
+              "value": 255,
+              "name": "nodata",
+              "description": "The pixel is NoData in Band_832nm",
+              "nodata": true
+            }
+          ]
+        },
+        {
+          "nodata": 255,
+          "sampling": "area",
+          "data_type": "uint8",
+          "classification:classes": [
+            {
+              "value": 0,
+              "name": "no-pixel-quality-condition",
+              "description": "The pixel has no documented quality condition in Band_850nm"
+            },
+            {
+              "value": 1,
+              "name": "interpolated",
+              "description": "The pixel value has been estimated from nearby measurements in Band_850nm"
+            },
+            {
+              "value": 255,
+              "name": "nodata",
+              "description": "The pixel is NoData in Band_850nm",
+              "nodata": true
+            }
+          ]
+        },
+        {
+          "nodata": 255,
+          "sampling": "area",
+          "data_type": "uint8",
+          "classification:classes": [
+            {
+              "value": 0,
+              "name": "no-pixel-quality-condition",
+              "description": "The pixel has no documented quality condition in Band_870nm"
+            },
+            {
+              "value": 1,
+              "name": "interpolated",
+              "description": "The pixel value has been estimated from nearby measurements in Band_870nm"
+            },
+            {
+              "value": 255,
+              "name": "nodata",
+              "description": "The pixel is NoData in Band_870nm",
+              "nodata": true
+            }
+          ]
+        }
+      ],
+      "file:checksum": "c0e40240f44d888b75f676d0667823468c1f0ae816d0394366c0eb5b66bc73a184bbf69c6708672ac3594c81e173ad6ffa7bff6e381987cd5a45a01ee1212f0121c696b3",
+      "file:size": 1703959,
+      "roles": [
+        "data-mask",
+        "interpolated"
+      ]
+    },
+    "stac_metadata": {
+      "href": "https://wyvern-prod-public-open-data-program.s3.ca-central-1.amazonaws.com/wyvern_dragonette-004_20250927T145218_edb4d3af/wyvern_dragonette-004_20250927T145218_edb4d3af.json",
+      "type": "application/json",
+      "title": "JSON Metadata",
+      "description": "Downloadable link for the STAC item metadata. Contains information about bands and imaging information.",
+      "roles": "metadata"
+    },
+    "zip_file": {
+      "href": "https://wyvern-prod-public-open-data-program.s3.ca-central-1.amazonaws.com/wyvern_dragonette-004_20250927T145218_edb4d3af/edb4d3af-3a7c-4eab-80e7-8acecb57cb79.zip",
+      "type": "application/zip",
+      "title": "ZIP File",
+      "description": "ZIP file containing the image and all metadata/assets. This is how our imagery is delivered when the satellite is tasked.",
+      "roles": "metadata"
+    }
+  }
+}

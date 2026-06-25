@@ -4,12 +4,12 @@ project:
 
 pipeline:
   stages:
-    - 01_convert_to_toa_reflectance.py
-    - 15_unsupervised_kmeans.py
-    - 12_sam_fullscene_geotiff.py
-    - 24_compute_indices.py
-    - 25_analysis_metrics.py
-    - 22_export_previews.py
+    - convert.py
+    - kmeans.py
+    - sam.py
+    - compute_indices.py
+    - analysis_metrics.py
+    - export_previews.py
 
 clustering:
   k: 5

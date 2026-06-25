@@ -4,16 +4,16 @@ project:
 
 pipeline:
   stages:
-    - 02_convert_to_toa_reflectance.py
-    - 04_water_mask.py
-    - 05_pca_kmeans_water.py
-    - 06_kmeans_water_features.py
-    - 10_sfa_kmeans_water_classes.py
-    - 11_proxy_map_ndti_ndci.py
-    - 12_class_proxy_summary.py
-    - 13_composite_proxy_map.py
-    - 14_make_proxy_panels.py
-    - 03_export_previews.py
+    - convert.py
+    - water_mask.py
+    - pca_kmeans_water.py
+    - kmeans_water_features.py
+    - sfa_kmeans_water_classes.py
+    - proxy_map_ndti_ndci.py
+    - class_proxy_summary.py
+    - composite_proxy_map.py
+    - make_proxy_panels.py
+    - export_previews.py
 
 masking:
   green_nm: 549.0
