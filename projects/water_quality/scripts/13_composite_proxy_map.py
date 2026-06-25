@@ -34,27 +34,6 @@ def _zscore_on_mask(x, mask):
     return out
 
 
-def _save_continuous(path, arr, title):
-    v = arr[np.isfinite(arr)]
-    vmin, vmax = (float(np.percentile(v, 2)), float(np.percentile(v, 98))) if v.size else (None, None)
-    plt.figure(figsize=(10, 8))
-    im = plt.imshow(arr, vmin=vmin, vmax=vmax); plt.axis("off"); plt.title(title)
-    fig = plt.gcf(); fig.subplots_adjust(right=0.86)
-    plt.colorbar(im, cax=fig.add_axes([0.88, 0.12, 0.03, 0.76]))
-    plt.savefig(path, dpi=200, bbox_inches="tight", pad_inches=0.05); plt.close()
-    logger.info("Wrote: %s", path)
-
-
-def _save_hotspots(path, ngb, hotspot, water, title):
-    plt.figure(figsize=(12, 10))
-    plt.imshow(ngb)
-    plt.contour(hotspot.astype(np.uint8), levels=[0.5], colors="yellow", linewidths=1.0)
-    plt.contour(water.astype(np.uint8), levels=[0.5], colors="white", linewidths=0.6)
-    plt.axis("off"); plt.title(title); plt.tight_layout()
-    plt.savefig(path, dpi=200); plt.close()
-    logger.info("Wrote: %s", path)
-
-
 def main(config: Config) -> None:
     p = config.proxies
     scene = resolve_scene(config.project_dir)
@@ -76,16 +55,18 @@ def main(config: Config) -> None:
                  + p.composite_w_ndci * _zscore_on_mask(ndci, use)).astype(np.float32)
     composite[~use] = np.nan
 
-    _save_continuous(out_dir / "optical_proxy_composite_continuous.png", composite,
-                     f"Composite optical proxy = {p.composite_w_ndti}*z(NDTI) + "
-                     f"{p.composite_w_ndci}*z(NDCI) (water-only)")
+    visualization.save_heatmap(out_dir / "optical_proxy_composite_continuous.png", composite,
+                               f"Composite optical proxy = {p.composite_w_ndti}*z(NDTI) + "
+                               f"{p.composite_w_ndci}*z(NDCI) (water-only)")
 
     top = int(p.composite_hotspot_top_pct)
     v = composite[use & np.isfinite(composite)]
     thr = np.percentile(v, 100.0 - p.composite_hotspot_top_pct) if v.size else np.inf
     hot = use & np.isfinite(composite) & (composite >= thr)
-    _save_hotspots(out_dir / f"optical_proxy_composite_hotspots_top{top}_on_ngb.png", ngb, hot, water,
-                   f"Composite optical-proxy hotspots (top {top}% water-only) over NGB")
+    visualization.save_contour_overlay(
+        out_dir / f"optical_proxy_composite_hotspots_top{top}_on_ngb.png", ngb,
+        [(hot, "yellow", 1.0), (water, "white", 0.6)],
+        f"Composite optical-proxy hotspots (top {top}% water-only) over NGB")
 
 
 if __name__ == "__main__":

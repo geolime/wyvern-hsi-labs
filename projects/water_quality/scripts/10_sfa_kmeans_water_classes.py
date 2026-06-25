@@ -19,7 +19,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import rasterio
-from matplotlib import colormaps
 
 from wyvernhsi import clustering, indices, io, visualization
 from wyvernhsi.config import Config, load_config
@@ -57,31 +56,15 @@ def _feature_row(c, mk, X):
 
 
 def _save_class_map(lab, water, out_png, title, k, *, bg=None, alpha=1.0, transparent=False):
-    viridis = colormaps["viridis"]
-    cmap = viridis.copy(); cmap.set_bad(alpha=0.0)
     plt.figure(figsize=(12, 10))
     if bg is not None:
         plt.imshow(bg)
-    plt.imshow(np.ma.masked_where(lab < 0, lab), cmap=cmap, vmin=0, vmax=k - 1, alpha=alpha)
+    plt.imshow(np.ma.masked_where(lab < 0, lab), cmap=visualization.masked_cmap(),
+               vmin=0, vmax=k - 1, alpha=alpha)
     plt.contour(water.astype(np.uint8), levels=[0.5], linewidths=SHORELINE_LW)
     plt.axis("off"); plt.title(title)
-    handles = [plt.Rectangle((0, 0), 1, 1, color=viridis(i / (k - 1))[:3]) for i in range(k)]
-    plt.legend(handles, [f"{i}: {TURBIDITY_LABELS[i]}" for i in range(k)],
-               loc="lower right", framealpha=0.9)
+    visualization.add_class_legend([f"{i}: {TURBIDITY_LABELS[i]}" for i in range(k)])
     plt.tight_layout(); plt.savefig(out_png, dpi=200, transparent=transparent); plt.close()
-    logger.info("Wrote: %s", out_png)
-
-
-def _save_ndci_continuous(out_png, arr, title):
-    v = arr[np.isfinite(arr)]
-    if v.size == 0:
-        return
-    vmin, vmax = float(np.percentile(v, 2)), float(np.percentile(v, 98))
-    plt.figure(figsize=(10, 8))
-    im = plt.imshow(arr, vmin=vmin, vmax=vmax); plt.axis("off"); plt.title(title)
-    fig = plt.gcf(); fig.subplots_adjust(right=0.86)
-    plt.colorbar(im, cax=fig.add_axes([0.88, 0.12, 0.03, 0.76]))
-    plt.savefig(out_png, dpi=200, bbox_inches="tight", pad_inches=0.05); plt.close()
     logger.info("Wrote: %s", out_png)
 
 
@@ -90,7 +73,7 @@ def _save_ngb_ndci(out_png, ngb, ndci, water):
     if v.size == 0:
         return
     vmin, vmax = float(np.percentile(v, 2)), float(np.percentile(v, 98))
-    cmap = plt.get_cmap("viridis").copy(); cmap.set_bad(alpha=0.0)
+    cmap = visualization.masked_cmap()
     plot = np.ma.masked_where(~(np.isfinite(ndci) & water), ndci)
     plt.figure(figsize=(12, 10))
     plt.imshow(ngb)
@@ -194,8 +177,8 @@ def main(config: Config) -> None:
     _save_class_map(lab, water, out_dir / f"ngb_with_{prefix}.png",
                     f"SFA KMeans over NGB (alpha={ALPHA})", k, bg=ngb, alpha=ALPHA)
 
-    _save_ndci_continuous(out_dir / "ndci_711_669_water_only.png", ndci,
-                          "NDCI (711/669) chlorophyll proxy (water-only)")
+    visualization.save_heatmap(out_dir / "ndci_711_669_water_only.png", ndci,
+                               "NDCI (711/669) chlorophyll proxy (water-only)")
     _save_ngb_ndci(out_dir / "ngb_with_ndci_711_669.png", ngb, ndci, use)
 
 

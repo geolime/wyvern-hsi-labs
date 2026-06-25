@@ -13,7 +13,6 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 import rasterio
-from matplotlib import colormaps
 
 from wyvernhsi import io, visualization
 from wyvernhsi.config import Config, load_config
@@ -41,17 +40,14 @@ def _save_quicklook(path, u8):
 
 
 def _draw_classes(path, lab, water, k, title, *, bg=None, alpha=1.0, transparent=False):
-    viridis = colormaps["viridis"]
-    cmap = viridis.copy(); cmap.set_bad(alpha=0.0)
     plt.figure(figsize=(12, 10))
     if bg is not None:
         plt.imshow(bg.astype(np.float32) / 255.0 * 0.5)
-    plt.imshow(np.ma.masked_where(lab < 0, lab), cmap=cmap, vmin=0, vmax=k - 1, alpha=alpha)
+    plt.imshow(np.ma.masked_where(lab < 0, lab), cmap=visualization.masked_cmap(),
+               vmin=0, vmax=k - 1, alpha=alpha)
     plt.contour(water.astype(np.uint8), levels=[0.5], linewidths=0.5)
     plt.axis("off"); plt.title(title)
-    handles = [plt.Rectangle((0, 0), 1, 1, color=viridis(i / (k - 1))[:3]) for i in range(k)]
-    plt.legend(handles, [f"{i}: {TURBIDITY_LABELS.get(i, '')}" for i in range(k)],
-               loc="lower right", framealpha=0.9)
+    visualization.add_class_legend([f"{i}: {TURBIDITY_LABELS.get(i, '')}" for i in range(k)])
     plt.tight_layout(); plt.savefig(path, dpi=200, transparent=transparent); plt.close()
     logger.info("Wrote: %s", path)
 

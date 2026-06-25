@@ -60,9 +60,7 @@ def _preview(lab, cir, *, class_colors, class_names, nodata_color, draw_boundari
         outline[_boundaries(lab)] = (1, 1, 1, 0.8)
         plt.imshow(outline)
     plt.axis("off"); plt.title(title)
-    handles = [plt.Rectangle((0, 0), 1, 1, color=nodata_color)] + \
-              [plt.Rectangle((0, 0), 1, 1, color=class_colors[i]) for i in range(nclass)]
-    plt.legend(handles, ["nodata", *class_names], loc="lower right", framealpha=0.9)
+    visualization.add_class_legend(["nodata", *class_names], colors=[nodata_color, *class_colors])
     plt.tight_layout(); plt.savefig(class_only_png, dpi=200); plt.close()
 
     overlay = np.zeros((*lab.shape, 4), dtype=np.float32)
@@ -84,13 +82,12 @@ def main(config: Config) -> None:
     with rasterio.open(scene.reflectance) as ds:
         cir = _cir(ds)  # read once, reused for both overlays
 
-    viridis = colormaps["viridis"]
     with rasterio.open(out / f"kmeans_clusters_K{k}.tif") as ds:
         km = ds.read(1).astype(np.int16)
     _preview(km, cir,
-             class_colors=[viridis(c / (k - 1))[:3] for c in range(k)],
+             class_colors=visualization.class_colors(k),
              class_names=[f"cluster {c}" for c in range(k)],
-             nodata_color=viridis(0.0)[:3], draw_boundaries=True,
+             nodata_color=colormaps["viridis"](0.0)[:3], draw_boundaries=True,
              title=f"KMeans clusters (K={k})",
              class_only_png=out / f"kmeans_K{k}_class_only.png",
              overlay_png=out / f"kmeans_K{k}_overlay_cir.png")

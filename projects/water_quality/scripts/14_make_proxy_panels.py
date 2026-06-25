@@ -71,42 +71,9 @@ def _robust_limits(x, mask, lo=2.0, hi=98.0):
     return float(np.percentile(v, lo)), float(np.percentile(v, hi))
 
 
-def _save_binned_with_legend(path, binned, edges, title):
-    n_bins = len(edges) - 1
-    cmap = plt.get_cmap("viridis", n_bins).copy(); cmap.set_bad(alpha=0.0)
-    plt.figure(figsize=(10, 8))
-    im = plt.imshow(np.ma.masked_where(binned < 0, binned), cmap=cmap, vmin=0, vmax=n_bins - 1)
-    plt.axis("off"); plt.title(title)
-    fig = plt.gcf(); fig.subplots_adjust(right=0.83)
-    cb = plt.colorbar(im, cax=fig.add_axes([0.85, 0.12, 0.03, 0.76]), ticks=list(range(n_bins)))
-    cb.ax.set_yticklabels(_fmt_edges(edges))
-    plt.savefig(path, dpi=200, bbox_inches="tight", pad_inches=0.05); plt.close()
-    logger.info("Wrote: %s", path)
-
-
-def _save_continuous_labeled(path, arr, mask, title, cbar_label):
-    vmin, vmax = _robust_limits(arr, mask)
-    plt.figure(figsize=(10, 8))
-    im = plt.imshow(arr, vmin=vmin, vmax=vmax); plt.axis("off"); plt.title(title)
-    fig = plt.gcf(); fig.subplots_adjust(right=0.83)
-    cb = plt.colorbar(im, cax=fig.add_axes([0.85, 0.12, 0.03, 0.76])); cb.set_label(cbar_label)
-    plt.savefig(path, dpi=200, bbox_inches="tight", pad_inches=0.05); plt.close()
-    logger.info("Wrote: %s", path)
-
-
 def _bin_to_rgba(binned, n_bins):
     cmap = plt.get_cmap("viridis", n_bins).copy(); cmap.set_bad(alpha=0.0)
     return cmap(np.ma.masked_where(binned < 0, binned) / max(1, n_bins - 1))
-
-
-def _class_rgba(lab, k):
-    viridis = plt.get_cmap("viridis")
-    rgba = np.zeros((*lab.shape, 4), dtype=np.float32)
-    ok = lab >= 0
-    if np.any(ok):
-        rgba[ok, :3] = viridis(lab[ok].astype(np.float32) / (k - 1))[:, :3]
-        rgba[ok, 3] = 1.0
-    return rgba
 
 
 def _panel_three(out_png, panels):
@@ -144,13 +111,13 @@ def main(config: Config) -> None:
     ndti_bin = _bin_with_edges(ndti, use, ndti_edges)
     ndci_bin = _bin_with_edges(ndci, use, ndci_edges)
 
-    _save_binned_with_legend(out_dir / "ndti_binned5_value_ranges.png", ndti_bin, ndti_edges,
-                             "NDTI binned (water-only) — bins are value ranges")
-    _save_binned_with_legend(out_dir / "ndci_binned5_value_ranges.png", ndci_bin, ndci_edges,
-                             "NDCI binned (water-only) — bins are value ranges")
-    _save_continuous_labeled(out_dir / "optical_proxy_composite_labeled.png", composite, use,
-                             "Composite optical proxy (water-only)",
-                             f"{p.composite_w_ndti}*z(NDTI) + {p.composite_w_ndci}*z(NDCI)")
+    visualization.save_binned(out_dir / "ndti_binned5_value_ranges.png", ndti_bin, len(ndti_edges) - 1,
+                              "NDTI binned (water-only) — bins are value ranges", _fmt_edges(ndti_edges))
+    visualization.save_binned(out_dir / "ndci_binned5_value_ranges.png", ndci_bin, len(ndci_edges) - 1,
+                              "NDCI binned (water-only) — bins are value ranges", _fmt_edges(ndci_edges))
+    visualization.save_heatmap(out_dir / "optical_proxy_composite_labeled.png", composite,
+                               "Composite optical proxy (water-only)",
+                               cbar_label=f"{p.composite_w_ndti}*z(NDTI) + {p.composite_w_ndci}*z(NDCI)")
 
     _panel_three(out_dir / "panel_ngb_ndti_ndci_binned.png", [
         (ngb, "NGB (764/549/510)"),
@@ -166,18 +133,16 @@ def main(config: Config) -> None:
     with rasterio.open(sfa_tif) as ds_lab:
         lab = ds_lab.read(1).astype(np.int16)
 
-    cmap = plt.get_cmap("viridis").copy(); cmap.set_bad(alpha=0.0)
-    viridis = plt.get_cmap("viridis")
     plt.figure(figsize=(18, 6))
     ax1 = plt.subplot(1, 3, 1); ax1.imshow(ngb); ax1.set_title("NGB (764/549/510)"); ax1.axis("off")
-    ax2 = plt.subplot(1, 3, 2); ax2.imshow(_class_rgba(lab, k))
+    ax2 = plt.subplot(1, 3, 2)
+    ax2.imshow(np.ma.masked_where(lab < 0, lab), cmap=visualization.masked_cmap(), vmin=0, vmax=k - 1)
     ax2.set_title(f"SFA KMeans classes (K={k})"); ax2.axis("off")
-    handles = [plt.Rectangle((0, 0), 1, 1, color=viridis(i / (k - 1))[:3]) for i in range(k)]
-    ax2.legend(handles, [f"{i}: {TURBIDITY_LABELS.get(i, '')}" for i in range(k)],
-               loc="lower right", framealpha=0.9)
+    visualization.add_class_legend([f"{i}: {TURBIDITY_LABELS.get(i, '')}" for i in range(k)], ax=ax2)
     ax3 = plt.subplot(1, 3, 3)
     vmin, vmax = _robust_limits(composite, use)
-    im = ax3.imshow(np.ma.masked_where(~np.isfinite(composite), composite), cmap=cmap, vmin=vmin, vmax=vmax)
+    im = ax3.imshow(np.ma.masked_where(~np.isfinite(composite), composite),
+                    cmap=visualization.masked_cmap(), vmin=vmin, vmax=vmax)
     ax3.set_title(f"Composite proxy: {p.composite_w_ndti}*z(NDTI) + {p.composite_w_ndci}*z(NDCI)")
     ax3.axis("off")
     fig = plt.gcf()

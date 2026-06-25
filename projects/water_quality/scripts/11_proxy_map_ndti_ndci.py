@@ -25,24 +25,6 @@ from wyvernhsi.paths import project_dir_of, repo_root, resolve_scene
 logger = logging.getLogger(__name__)
 
 
-def _robust_limits(x, lo=2.0, hi=98.0):
-    v = x[np.isfinite(x)]
-    if v.size == 0:
-        return None, None
-    return float(np.percentile(v, lo)), float(np.percentile(v, hi))
-
-
-def _save_continuous(path, arr, title):
-    vmin, vmax = _robust_limits(arr)
-    plt.figure(figsize=(10, 8))
-    im = plt.imshow(arr, vmin=vmin, vmax=vmax)
-    plt.axis("off"); plt.title(title)
-    fig = plt.gcf(); fig.subplots_adjust(right=0.86)
-    plt.colorbar(im, cax=fig.add_axes([0.88, 0.12, 0.03, 0.76]))
-    plt.savefig(path, dpi=200, bbox_inches="tight", pad_inches=0.05); plt.close()
-    logger.info("Wrote: %s", path)
-
-
 def _bin_by_quantiles(arr, mask, n_bins):
     out = np.full(arr.shape, -1, dtype=np.int16)
     v = arr[mask & np.isfinite(arr)]
@@ -56,35 +38,12 @@ def _bin_by_quantiles(arr, mask, n_bins):
     return out
 
 
-def _save_binned(path, binned, title, n_bins):
-    cmap = plt.get_cmap("viridis", n_bins).copy()
-    cmap.set_bad(alpha=0.0)
-    plt.figure(figsize=(10, 8))
-    im = plt.imshow(np.ma.masked_where(binned < 0, binned), cmap=cmap, vmin=0, vmax=n_bins - 1)
-    plt.axis("off"); plt.title(title)
-    fig = plt.gcf(); fig.subplots_adjust(right=0.86)
-    cb = plt.colorbar(im, cax=fig.add_axes([0.88, 0.12, 0.03, 0.76]), ticks=list(range(n_bins)))
-    cb.ax.set_yticklabels([f"Q{i + 1}" for i in range(n_bins)])
-    plt.savefig(path, dpi=200, bbox_inches="tight", pad_inches=0.05); plt.close()
-    logger.info("Wrote: %s", path)
-
-
 def _top_percent(arr, mask, top_pct):
     v = arr[mask & np.isfinite(arr)]
     if v.size == 0:
         return np.zeros(arr.shape, dtype=bool)
     thr = np.percentile(v, 100.0 - top_pct)
     return mask & np.isfinite(arr) & (arr >= thr)
-
-
-def _save_hotspots(path, ngb, hotspot, water, title):
-    plt.figure(figsize=(12, 10))
-    plt.imshow(ngb)
-    plt.contour(hotspot.astype(np.uint8), levels=[0.5], colors="yellow", linewidths=1.2)
-    plt.contour(water.astype(np.uint8), levels=[0.5], colors="white", linewidths=0.6)
-    plt.axis("off"); plt.title(title); plt.tight_layout()
-    plt.savefig(path, dpi=200); plt.close()
-    logger.info("Wrote: %s", path)
 
 
 def main(config: Config) -> None:
@@ -107,17 +66,21 @@ def main(config: Config) -> None:
     top = int(p.hotspot_top_pct)
     for name, arr, title in (("ndti", ndti, "NDTI (turbidity proxy)"),
                              ("ndci", ndci, "NDCI (chlorophyll proxy)")):
-        _save_continuous(out_whole / f"{name}_continuous.png",
-                         np.where(use_whole, arr, np.nan), f"{title} — whole scene, QA-valid")
-        _save_continuous(out_water / f"{name}_continuous.png",
-                         np.where(use_water, arr, np.nan), f"{title} — water-only")
-        _save_binned(out_whole / f"{name}_binned5.png",
-                     _bin_by_quantiles(arr, use_whole, p.n_bins), f"{title} — 5 quantiles, whole scene", p.n_bins)
-        _save_binned(out_water / f"{name}_binned5.png",
-                     _bin_by_quantiles(arr, use_water, p.n_bins), f"{title} — 5 quantiles, water-only", p.n_bins)
-        _save_hotspots(out_dir / f"{name}_hotspots_top{top}_on_ngb.png",
-                       ngb, _top_percent(arr, use_water, p.hotspot_top_pct), water,
-                       f"{title} hotspots (top {top}% water-only) over NGB")
+        visualization.save_heatmap(out_whole / f"{name}_continuous.png",
+                                   np.where(use_whole, arr, np.nan), f"{title} — whole scene, QA-valid")
+        visualization.save_heatmap(out_water / f"{name}_continuous.png",
+                                   np.where(use_water, arr, np.nan), f"{title} — water-only")
+        q_labels = [f"Q{i + 1}" for i in range(p.n_bins)]
+        visualization.save_binned(out_whole / f"{name}_binned5.png",
+                                  _bin_by_quantiles(arr, use_whole, p.n_bins), p.n_bins,
+                                  f"{title} — 5 quantiles, whole scene", q_labels)
+        visualization.save_binned(out_water / f"{name}_binned5.png",
+                                  _bin_by_quantiles(arr, use_water, p.n_bins), p.n_bins,
+                                  f"{title} — 5 quantiles, water-only", q_labels)
+        visualization.save_contour_overlay(
+            out_dir / f"{name}_hotspots_top{top}_on_ngb.png", ngb,
+            [(_top_percent(arr, use_water, p.hotspot_top_pct), "yellow", 1.2), (water, "white", 0.6)],
+            f"{title} hotspots (top {top}% water-only) over NGB")
 
 
 if __name__ == "__main__":

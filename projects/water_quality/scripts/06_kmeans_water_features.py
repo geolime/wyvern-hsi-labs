@@ -19,9 +19,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import rasterio
-from matplotlib import colormaps
 
-from wyvernhsi import clustering, indices, io
+from wyvernhsi import clustering, indices, io, visualization
 from wyvernhsi.config import Config, load_config
 from wyvernhsi.logging_setup import configure_logging
 from wyvernhsi.masks import load_valid_mask, load_water_mask
@@ -38,24 +37,6 @@ TURBIDITY_LABELS = {
     4: "most turbid (highest NDTI)",
 }
 
-
-def _robust_limits(x, lo=2, hi=98):
-    v = x[np.isfinite(x)]
-    if v.size == 0:
-        return None, None
-    return float(np.percentile(v, lo)), float(np.percentile(v, hi))
-
-
-def _save_map(path, arr, title):
-    vmin, vmax = _robust_limits(arr)
-    plt.figure(figsize=(10, 8))
-    im = plt.imshow(arr, vmin=vmin, vmax=vmax); plt.axis("off"); plt.title(title)
-    fig = plt.gcf(); fig.subplots_adjust(right=0.86)
-    plt.colorbar(im, cax=fig.add_axes([0.88, 0.12, 0.03, 0.76]))
-    plt.savefig(path, dpi=200, bbox_inches="tight", pad_inches=0.05); plt.close()
-    logger.info("Wrote: %s", path)
-
-
 def _feature_row(c, mk, X):
     row = {"cluster": c, "n": int(mk.sum())}
     for j, nm in enumerate(FEATURES):
@@ -66,14 +47,10 @@ def _feature_row(c, mk, X):
 
 
 def _save_class_png(lab, out_png, title, k):
-    viridis = colormaps["viridis"]
-    cmap = viridis.copy(); cmap.set_bad(alpha=0.0)
     plt.figure(figsize=(12, 10))
-    plt.imshow(np.ma.masked_where(lab < 0, lab), vmin=0, vmax=k - 1, cmap=cmap)
+    plt.imshow(np.ma.masked_where(lab < 0, lab), vmin=0, vmax=k - 1, cmap=visualization.masked_cmap())
     plt.axis("off"); plt.title(title)
-    handles = [plt.Rectangle((0, 0), 1, 1, color=viridis(i / (k - 1))[:3]) for i in range(k)]
-    plt.legend(handles, [f"{i}: {TURBIDITY_LABELS[i]}" for i in range(k)],
-               loc="lower right", framealpha=0.9)
+    visualization.add_class_legend([f"{i}: {TURBIDITY_LABELS[i]}" for i in range(k)])
     plt.tight_layout(); plt.savefig(out_png, dpi=200, transparent=True); plt.close()
     logger.info("Wrote: %s", out_png)
 
@@ -152,8 +129,8 @@ def main(config: Config) -> None:
     if m.any():
         logger.info("Corr(NDTI, NDCI) on water pixels: %.4f",
                     float(np.corrcoef(ndti_w[m], ndci_w[m])[0, 1]))
-    _save_map(out_dir / "ndti_map.png", ndti_w, "NDTI (turbidity proxy)")
-    _save_map(out_dir / "ndci_map.png", ndci_w, "NDCI (chlorophyll proxy)")
+    visualization.save_heatmap(out_dir / "ndti_map.png", ndti_w, "NDTI (turbidity proxy)")
+    visualization.save_heatmap(out_dir / "ndci_map.png", ndci_w, "NDCI (chlorophyll proxy)")
 
     _save_class_png(lab, out_dir / f"{prefix}.png",
                     f"KMeans water classes (ordered by turbidity) — K={k}", k)
