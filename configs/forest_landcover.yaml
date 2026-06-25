@@ -8,6 +8,7 @@ pipeline:
     - 15_unsupervised_kmeans.py
     - 12_sam_fullscene_geotiff.py
     - 24_compute_indices.py
+    - 25_analysis_metrics.py
 
 clustering:
   k: 5
@@ -32,6 +33,8 @@ clustering:
     - [1350, 640]
     - [3101, 1229]
     - [2536, 1352]
+  sample_silhouette: 80000
+  stability_runs: 6
 
 features:
   red_nm: 660.0
