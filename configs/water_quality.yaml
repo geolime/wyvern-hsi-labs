@@ -11,6 +11,7 @@ pipeline:
     - 10_sfa_kmeans_water_classes.py
     - 11_proxy_map_ndti_ndci.py
     - 12_class_proxy_summary.py
+    - 13_composite_proxy_map.py
 
 masking:
   green_nm: 549.0
@@ -42,6 +43,9 @@ proxies:
   percentile_hi: 98.0
   hotspot_top_pct: 10.0
   n_bins: 5
+  composite_w_ndti: 1.0
+  composite_w_ndci: 0.5
+  composite_hotspot_top_pct: 5.0
 
 sfa:
   ndti_green_nm: 570.0
