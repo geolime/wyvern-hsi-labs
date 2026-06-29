@@ -76,3 +76,11 @@ CI (GitHub Actions) installs the package and runs lint + tests on every push.
 ## Notes on interpretation
 
 These are exploratory remote-sensing pipelines, and the READMEs are deliberate about what the numbers do and don't mean: KMeans groups are unsupervised (cluster IDs arbitrary), SAM has no accuracy assessment, water indices are optical proxies rather than concentrations, and with millions of pixels per group the meaningful statistic is effect size, not p-value. See each project README for per-scene results, figures, and caveats.
+
+## Data sources & attribution
+
+**Imagery — Wyvern Dragonette** open hyperspectral data, licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/):
+
+> © 2025 Wyvern Incorporated. All Rights Reserved.
+
+No external validation reference is used for this project (no in-situ water-quality measurements or independent map were available for Bitter Lake); the water-quality indices are uncalibrated optical proxies, as noted above.
