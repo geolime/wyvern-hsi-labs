@@ -33,6 +33,7 @@ outputs/logs/
 # Uncomment to stop versioning multi-hundred-MB hyperspectral rasters.
 projects/*/data/*.tif
 projects/*/data/*.tiff
+projects/*/reference/*.tif
 projects/*/reference/*.tiff
 
 #GIS Artifacts
