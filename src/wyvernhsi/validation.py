@@ -67,3 +67,24 @@ def score(pred_class: np.ndarray, ref_class: np.ndarray, classes: list) -> tuple
             "reference_support": ref_n,
         }
     return cm_df, metrics
+
+def block_split(valid_yx: np.ndarray, *, n_blocks: int, test_frac: float, seed: int):
+    """
+    Assign valid pixels to a spatially-blocked train/test split (avoids neighbour leakage).
+    Divides the scene into n_blocks x n_blocks tiles; whole tiles go to test or train.
+    Returns (train_mask, test_mask) boolean arrays shaped like valid_yx.
+    """
+    h, w = valid_yx.shape
+    by, bx = np.linspace(0, h, n_blocks + 1).astype(int), np.linspace(0, w, n_blocks + 1).astype(int)
+    rng = np.random.default_rng(seed)
+    block_ids = np.arange(n_blocks * n_blocks)
+    test_ids = set(rng.choice(block_ids, size=int(round(len(block_ids) * test_frac)), replace=False).tolist())
+
+    train = np.zeros_like(valid_yx, dtype=bool)
+    test = np.zeros_like(valid_yx, dtype=bool)
+    for b in block_ids:
+        r0, r1 = by[b // n_blocks], by[b // n_blocks + 1]
+        c0, c1 = bx[b % n_blocks], bx[b % n_blocks + 1]
+        target = test if b in test_ids else train
+        target[r0:r1, c0:c1] = True
+    return train & valid_yx, test & valid_yx

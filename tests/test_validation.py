@@ -38,3 +38,10 @@ def test_score_perfect_and_offdiagonal():
     assert m["n_pixels"] == 4
     assert np.isclose(m["overall_agreement"], 0.75)   # 3 of 4 on diagonal
     assert m["per_class"]["trees"]["precision"] == 0.5  # pred trees: 1 of 2 correct
+
+def test_block_split_disjoint_and_blocky():
+    valid = np.ones((20, 20), dtype=bool)
+    tr, te = validation.block_split(valid, n_blocks=4, test_frac=0.25, seed=0)
+    assert not (tr & te).any()                 # disjoint
+    assert tr.sum() > 0 and te.sum() > 0
+    assert tr.sum() + te.sum() == valid.sum()  # partition (all valid pixels assigned)

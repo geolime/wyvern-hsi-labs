@@ -83,6 +83,14 @@ class ValidationCfg:
     reference_ignore: list
     crosswalk: dict   # {class_name: [reference_code, ...]}
 
+@dataclass(frozen=True)
+class RandomForestCfg:
+    max_samples_per_class: int
+    n_blocks: int
+    test_frac: float
+    n_estimators: int
+    max_depth: int
+
 
 @dataclass(frozen=True)
 class Config:
@@ -97,6 +105,7 @@ class Config:
     sam: Optional[SamCfg] = None
     sfa: Optional[SfaCfg] = None
     validation: Optional[ValidationCfg] = None
+    random_forest: Optional[RandomForestCfg] = None
 
 def load_config(path) -> Config:
     """Load and validate a project config. Missing/extra keys fail fast."""
@@ -114,4 +123,5 @@ def load_config(path) -> Config:
         sam=SamCfg(**raw["sam"]) if "sam" in raw else None,
         sfa=SfaCfg(**raw["sfa"]) if "sfa" in raw else None,
         validation=ValidationCfg(**raw["validation"]) if "validation" in raw else None,
+        random_forest=RandomForestCfg(**raw["random_forest"]) if "random_forest" in raw else None,
     )

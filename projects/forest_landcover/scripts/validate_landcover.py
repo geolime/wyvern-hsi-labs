@@ -71,6 +71,10 @@ def _save_confusion(cm_df, title, out_png):
 
 def main(config: Config) -> None:
     v = config.validation
+    if v is None or not (config.project_dir / v.reference_tif).exists():
+        logger.warning("No validation reference (%s); skipping validation stage.",
+                       v.reference_tif if v else "validation config absent")
+        return
     classes = list(v.crosswalk.keys())
     scene = resolve_scene(config.project_dir)
     out = scene.outputs_dir / "validation"

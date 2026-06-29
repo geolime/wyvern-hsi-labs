@@ -10,6 +10,8 @@ pipeline:
     - compute_indices.py
     - analysis_metrics.py
     - export_previews.py
+    - validate_landcover.py
+    - classify_rf.py
 
 clustering:
   k: 5
@@ -75,3 +77,10 @@ validation:
     crops:  [15, 21, 39, 72]
     bare:   [23, 24, 25, 29, 61, 68]
     # grass + water dropped: 0 and ~860 reference pixels in this scene
+
+random_forest:
+  max_samples_per_class: 50000
+  n_blocks: 8           # 8x8 grid; whole blocks go to train or test
+  test_frac: 0.30
+  n_estimators: 200
+  max_depth: 20
