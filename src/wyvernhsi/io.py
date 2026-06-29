@@ -5,6 +5,8 @@ from pathlib import Path
 import numpy as np
 import rasterio
 from rasterio.windows import Window
+from rasterio.warp import Resampling, reproject
+from rasterio.windows import from_bounds
 
 from wyvernhsi.wavelengths import (
     parse_wavelengths_nm_from_descriptions,
@@ -62,6 +64,27 @@ def read_band_nm(ds: rasterio.DatasetReader, target_nm: float) -> np.ndarray:
 def read_composite(ds: rasterio.DatasetReader, nm_list) -> np.ndarray:
     """Read bands nearest each wavelength as an (H, W, len) float32 stack (nodata -> NaN)."""
     return np.dstack([read_band_nm(ds, nm) for nm in nm_list])
+
+def align_reference(ref_path, scene_profile) -> np.ndarray:
+    """
+    Read only the part of a categorical reference raster overlapping the scene, and
+    nearest-neighbour reproject it onto the scene's grid. Returns (H, W) uint16.
+    Both rasters must share a CRS (no cross-CRS warp here).
+    """
+    H, W = scene_profile["height"], scene_profile["width"]
+    dst = np.zeros((H, W), dtype=np.uint16)
+    with rasterio.open(ref_path) as ref:
+        left, bottom, right, top = rasterio.transform.array_bounds(H, W, scene_profile["transform"])
+        win = from_bounds(left, bottom, right, top, ref.transform).round_offsets().round_lengths()
+        src = ref.read(1, window=win, boundless=True, fill_value=0)
+        src_transform = ref.window_transform(win)
+        reproject(
+            src, dst,
+            src_transform=src_transform, src_crs=ref.crs,
+            dst_transform=scene_profile["transform"], dst_crs=scene_profile["crs"],
+            resampling=Resampling.nearest,
+        )
+    return dst
 
 
 def write_geotiff(

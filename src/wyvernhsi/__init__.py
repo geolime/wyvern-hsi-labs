@@ -5,10 +5,10 @@ __version__ = "0.1.0"
 
 from wyvernhsi import (
     classification, clustering, indices, io, masks, paths, radiometry, reporting,
-    stac, visualization, wavelengths,
+    stac, visualization, wavelengths, validation 
 )
 
 __all__ = [
     "classification", "clustering", "indices", "io", "masks", "paths", "radiometry",
-    "reporting", "stac", "visualization", "wavelengths", "__version__",
+    "reporting", "stac", "visualization", "wavelengths", "validation", "__version__",
 ]

@@ -77,6 +77,12 @@ class SfaCfg:
     rgb_nm: list
     ngb_nm: list
 
+@dataclass(frozen=True)
+class ValidationCfg:
+    reference_tif: str
+    reference_ignore: list
+    crosswalk: dict   # {class_name: [reference_code, ...]}
+
 
 @dataclass(frozen=True)
 class Config:
@@ -90,6 +96,7 @@ class Config:
     proxies: Optional[ProxiesCfg] = None
     sam: Optional[SamCfg] = None
     sfa: Optional[SfaCfg] = None
+    validation: Optional[ValidationCfg] = None
 
 def load_config(path) -> Config:
     """Load and validate a project config. Missing/extra keys fail fast."""
@@ -106,4 +113,5 @@ def load_config(path) -> Config:
         proxies=ProxiesCfg(**raw["proxies"]) if "proxies" in raw else None,
         sam=SamCfg(**raw["sam"]) if "sam" in raw else None,
         sfa=SfaCfg(**raw["sfa"]) if "sfa" in raw else None,
+        validation=ValidationCfg(**raw["validation"]) if "validation" in raw else None,
     )

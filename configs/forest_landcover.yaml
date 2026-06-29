@@ -66,3 +66,13 @@ sam:
       - [1350, 640]
       - [3101, 1229]
       - [2536, 1352]
+
+validation:
+  reference_tif: data/reference/mapbiomas-bolivia-collection-30-2024.tif
+  reference_ignore: [0, 27, 30]
+  crosswalk:
+    trees:  [3, 4, 6]
+    grass:  [11, 12, 13, 66, 81, 82]
+    crops:  [15, 21, 39, 72]
+    bare:   [23, 24, 25, 29, 61, 68]
+    water:  [33, 34]
