@@ -26,6 +26,7 @@ Thumbs.db
 projects/*/outputs/
 projects/*/outputs_*/
 projects/*/data/derived/
+projects/*/reference/
 outputs/logs/
 
 # Large RAW input scenes — DECISION POINT (see notes below).
