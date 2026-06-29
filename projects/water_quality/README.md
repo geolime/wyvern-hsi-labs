@@ -96,3 +96,11 @@ outputs/water_features/
   rgb_with_water_classes.png / ngb_with_water_classes.png / water_classes_only.png
 outputs/  manifest.json / report.md
 ```
+
+## Data sources & attribution
+
+**Imagery — Wyvern Dragonette** open hyperspectral data, licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/):
+
+> © 2025 Wyvern Incorporated. All Rights Reserved.
+
+No external validation reference is used for this project (no in-situ water-quality measurements or independent map were available for Bitter Lake); the water-quality indices are uncalibrated optical proxies, as noted above.

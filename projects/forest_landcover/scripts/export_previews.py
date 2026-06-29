@@ -68,7 +68,9 @@ def _preview(lab, cir, *, class_colors, class_names, nodata_color, draw_boundari
         outline[_boundaries(lab)] = (1, 1, 1, 0.8)
         plt.imshow(outline)
     plt.axis("off"); plt.title(title)
-    visualization.add_class_legend(["nodata", *class_names], colors=[nodata_color, *class_colors])
+    visualization.add_class_legend(class_names, colors=class_colors)
+    plt.figtext(0.5, 0.02, "white / transparent = nodata, cloud & QA-masked areas",
+                ha="center", fontsize=8, color="0.4")
     plt.tight_layout(); plt.savefig(class_only_png, dpi=200); plt.close()
 
     overlay = np.zeros((*lab.shape, 4), dtype=np.float32)

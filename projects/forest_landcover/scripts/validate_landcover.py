@@ -14,6 +14,7 @@ import logging
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+from matplotlib.colors import LinearSegmentedColormap
 import numpy as np
 import rasterio
 
@@ -26,7 +27,7 @@ from wyvernhsi.paths import project_dir_of, repo_root, resolve_scene
 logger = logging.getLogger(__name__)
 
 # SAM class index (from config.sam.reference_classes order) -> target scheme name
-SAM_TO_TARGET = {0: "trees", 1: "grass", 2: "bare"}  # dense_trees, bright_veg, low_veg_soil
+SAM_TO_TARGET = {0: "trees", 1: "crops", 2: "bare"}  # dense_trees, bright_veg, low_veg_soil
 
 
 def _log_metrics(tag, m):
@@ -41,15 +42,29 @@ def _log_metrics(tag, m):
                     pc["reference_support"], pr, rc)
         
 
+# Palette high->low (Oxford blue = high agreement ... Giants orange = low)
+_CM_PALETTE_HI_LO = ["#01204E", "#028391", "#F6DCAC", "#FAA968", "#F85525"]
+_CM_CMAP = LinearSegmentedColormap.from_list("retro", list(reversed(_CM_PALETTE_HI_LO)))
+
+
 def _save_confusion(cm_df, title, out_png):
-    plt.figure(figsize=(7, 6))
-    plt.imshow(cm_df.values, cmap="Blues")
-    plt.xticks(range(len(cm_df.columns)), cm_df.columns, rotation=45, ha="right")
-    plt.yticks(range(len(cm_df.index)), cm_df.index)
-    for i in range(cm_df.shape[0]):
-        for j in range(cm_df.shape[1]):
-            plt.text(j, i, f"{cm_df.values[i, j]:,}", ha="center", va="center", fontsize=8)
-    plt.title(title); plt.colorbar(); plt.tight_layout()
+    cm = cm_df.values.astype(float)
+    total = cm.sum()
+    norm = cm / cm.max() if cm.max() else cm   # colour by relative magnitude
+    plt.figure(figsize=(7.5, 6.5))
+    plt.imshow(norm, cmap=_CM_CMAP, vmin=0, vmax=1)
+    plt.xticks(range(len(cm_df.columns)), [c.replace("ref_", "") for c in cm_df.columns])
+    plt.yticks(range(len(cm_df.index)), [c.replace("pred_", "") for c in cm_df.index])
+    plt.xlabel("Reference"); plt.ylabel("Predicted")
+    for i in range(cm.shape[0]):
+        for j in range(cm.shape[1]):
+            n = int(cm[i, j])
+            pct = (n / total * 100) if total else 0.0
+            # white text on the dark (high) end, dark text on the light/orange end
+            color = "white" if norm[i, j] > 0.55 else "#01204E"
+            plt.text(j, i, f"{n:,}\n{pct:.1f}%", ha="center", va="center",
+                     fontsize=9, color=color)
+    plt.title(title); plt.tight_layout()
     plt.savefig(out_png, dpi=200); plt.close()
     logger.info("Wrote: %s", out_png)
 
