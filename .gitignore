@@ -26,7 +26,7 @@ Thumbs.db
 projects/*/outputs/
 projects/*/outputs_*/
 projects/*/data/derived/
-projects/*/reference/
+projects/*/data/reference/
 outputs/logs/
 
 # Large RAW input scenes — DECISION POINT (see notes below).
@@ -34,8 +34,8 @@ outputs/logs/
 # Uncomment to stop versioning multi-hundred-MB hyperspectral rasters.
 projects/*/data/*.tif
 projects/*/data/*.tiff
-projects/*/reference/*.tif
-projects/*/reference/*.tiff
+projects/*/data/reference/*.tif
+projects/*/data/reference/*.tiff
 
 #GIS Artifacts
 *.aux.xml
