@@ -10,20 +10,20 @@ The library converts L1B top-of-atmosphere (TOA) radiance to TOA reflectance fro
 
 ## Projects
 
-| | [forest_landcover](projects/forest_landcover/) | [water_quality](projects/water_quality/) |
+| | [Forest Landcover](projects/forest_landcover/) | [Water Quality](projects/water_quality/) |
 |---|---|---|
 | **Study area** | Santa Cruz de la Sierra, Bolivia | Bitter Lake, Egypt |
 | **Goal** | unsupervised land-cover grouping (PCA + KMeans) + SAM reference mapping | water masking + optical turbidity/chlorophyll proxies |
 | **PC1 / 8-PC variance** | 77.5% / 99.0% | 74.2% / 95.9% |
 | **K=5 silhouette / ARI** | 0.39 / 0.65 | 0.33 / 0.82 |
 
-### forest_landcover — Santa Cruz de la Sierra, Bolivia
+### ### Forest Landcover: Santa Cruz de la Sierra, Bolivia
 
 **Colour-infrared quicklook (full scene).** Healthy vegetation reflects strongly in the near-infrared and appears red; bare and built surfaces stay muted. This is the scene the land-cover pipeline operates on.
 
 ![Forest CIR quicklook](docs/figures/forest/cir_quicklook.png)
 
-### water_quality — Bitter Lake, Egypt
+### ### Water Quality: Bitter Lake, Egypt
 
 **NGB composite (NIR-Green-Blue), QA-masked.** Clouds are removed (black); the inland water body is the analysis target for the turbidity and chlorophyll proxies.
 
@@ -35,7 +35,7 @@ The library converts L1B top-of-atmosphere (TOA) radiance to TOA reflectance fro
 pip install -e .
 ```
 
-Raw scenes are not stored in git — see each project's `data/README.md` for how to fetch and place a scene. Then run a project's pipeline:
+Raw scenes are not stored in git, see each project's `data/README.md` for how to fetch and place a scene. Then run a project's pipeline:
 
 ```bash
 python pipelines/run_pipeline.py --config configs/forest_landcover.yaml
@@ -58,6 +58,7 @@ src/wyvernhsi/
   indices.py       NDVI, NDTI, NDCI, red-edge slope, band ratio
   clustering.py    PCA+KMeans / standardized KMeans / tiled predict / ARI stability
   classification.py  Spectral Angle Mapper (SAM)
+  validation.py    reference-map crosswalk + reprojection to scene grid, confusion matrix / kappa
   visualization.py percentile/RGB stretch + heatmap/binned/contour/legend helpers
   reporting.py     run manifest + auto report
   logging_setup.py logging configuration
@@ -68,7 +69,7 @@ src/wyvernhsi/
 ```bash
 pip install -e ".[dev]"
 ruff check src tests pipelines
-pytest -q          # 38 tests
+pytest -q          # 43 tests
 ```
 
 CI (GitHub Actions) installs the package and runs lint + tests on every push.
@@ -82,5 +83,3 @@ These are exploratory remote-sensing pipelines, and the READMEs are deliberate a
 **Imagery — Wyvern Dragonette** open hyperspectral data, licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/):
 
 > © 2025 Wyvern Incorporated. All Rights Reserved.
-
-No external validation reference is used for this project (no in-situ water-quality measurements or independent map were available for Bitter Lake); the water-quality indices are uncalibrated optical proxies, as noted above.
