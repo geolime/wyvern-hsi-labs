@@ -18,6 +18,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import rasterio
 from sklearn.metrics import silhouette_score
+import csv
 
 from wyvernhsi import clustering, io, visualization
 from wyvernhsi.config import Config, load_config
@@ -27,6 +28,11 @@ from wyvernhsi.paths import project_dir_of, repo_root, resolve_scene
 from wyvernhsi.wavelengths import parse_wavelengths_nm_from_descriptions, pick_band_index_nearest
 
 logger = logging.getLogger(__name__)
+
+def _cluster_colors(k):
+    """One color per cluster ID, sampled from the same viridis used by the class map,
+    so cluster N is identical across the class map, spectra plot, and boxplots."""
+    return [plt.cm.viridis(i / max(k - 1, 1)) for i in range(k)]
 
 
 def _save_line(xs, ys, ylabel, title, out_png):
@@ -41,16 +47,20 @@ def _save_line(xs, ys, ylabel, title, out_png):
 
 
 def _save_boxplot(values_per_cluster, ylabel, title, out_png):
+    colors = _cluster_colors(len(values_per_cluster))
     plt.figure(figsize=(10, 4))
-    plt.boxplot(values_per_cluster,
-                tick_labels=[str(k) for k in range(len(values_per_cluster))], showfliers=False)
+    bp = plt.boxplot(values_per_cluster, patch_artist=True,
+                     tick_labels=[str(k) for k in range(len(values_per_cluster))], showfliers=False)
+    for patch, color in zip(bp["boxes"], colors):
+        patch.set_facecolor(color)
+    for median in bp["medians"]:
+        median.set_color("black")
     plt.xlabel("Cluster")
     plt.ylabel(ylabel)
     plt.title(title)
     plt.tight_layout()
     plt.savefig(out_png, dpi=200)
     plt.close()
-
 
 def main(config: Config) -> None:
     cl = config.clustering
@@ -116,7 +126,7 @@ def main(config: Config) -> None:
     logger.info("Wrote: %s", out_tif)
 
     plt.figure(figsize=(12, 10))
-    plt.imshow(lab, vmin=0, vmax=cl.k - 1)
+    plt.imshow(lab, cmap="viridis", vmin=0, vmax=cl.k - 1)
     plt.axis("off")
     plt.title(f"KMeans clusters (water-only) — K={cl.k}")
     plt.tight_layout()
@@ -130,6 +140,16 @@ def main(config: Config) -> None:
     b_lo = pick_band_index_nearest(wl_nm, 510.0)
     b_hi = pick_band_index_nearest(wl_nm, 660.0)
     slope = (Xk[:, b_hi] - Xk[:, b_lo]) / (660.0 - 510.0)
+    stats_path = out / f"{prefix}_cluster_stats.csv"
+    with stats_path.open("w", newline="", encoding="utf-8") as fh:
+        w = csv.writer(fh)
+        w.writerow(["cluster", "n_pixels", "brightness_median", "slope_median_R660_R510"])
+        for k in range(cl.k):
+            m = yk == k
+            w.writerow([k, int(m.sum()),
+                        f"{float(np.median(bright[m])):.6f}",
+                        f"{float(np.median(slope[m])):.8f}"])
+    logger.info("Wrote: %s", stats_path)
     _save_boxplot([bright[yk == k] for k in range(cl.k)], "Mean TOA reflectance (all bands)",
                   "Cluster brightness proxy (water-only)", out / f"{prefix}_cluster_brightness.png")
     _save_boxplot([slope[yk == k] for k in range(cl.k)], "Slope (R660 - R510) / 150 nm",
@@ -154,10 +174,19 @@ def main(config: Config) -> None:
 
     # Mean spectra per cluster (in-memory; cube already loaded)
     means, counts = clustering.cluster_mean_spectra([(cube, lab)], k=cl.k, n_bands=B, normalize=True)
+    spectra_path = out / f"{prefix}_cluster_mean_spectra.csv"
+    with spectra_path.open("w", newline="", encoding="utf-8") as fh:
+        w = csv.writer(fh)
+        w.writerow(["wavelength_nm"] + [f"cluster_{k}_l2mean" for k in range(cl.k)])
+        for j, wl in enumerate(wl_nm):
+            w.writerow([f"{float(wl):.1f}"]
+                       + [f"{float(means[k][j]):.6f}" for k in range(cl.k)])
+    logger.info("Wrote: %s", spectra_path)
+    colors = _cluster_colors(cl.k)
     plt.figure(figsize=(12, 7))
     for k in range(cl.k):
         if np.isfinite(means[k]).any():
-            plt.plot(wl_nm, means[k], label=f"cluster {k} (n={counts[k]})")
+            plt.plot(wl_nm, means[k], color=colors[k], label=f"cluster {k} (n={counts[k]})")
     plt.xlabel("Wavelength (nm)")
     plt.ylabel("L2-normalized TOA reflectance")  # corrected from "radiance"
     plt.title(f"Cluster mean spectra (water-only) — K={cl.k}, PCA={cl.pca_components}")
