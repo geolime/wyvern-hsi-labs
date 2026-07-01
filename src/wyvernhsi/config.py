@@ -58,6 +58,7 @@ class ProxiesCfg:
     composite_w_ndti: float
     composite_w_ndci: float
     composite_hotspot_top_pct: float
+    state_split_pct: float
 
 @dataclass(frozen=True)
 class SamCfg:

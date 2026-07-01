@@ -44,6 +44,7 @@ proxies:
   composite_w_ndti: 1.0
   composite_w_ndci: 1.0
   composite_hotspot_top_pct: 5.0
+  state_split_pct: 50.0
 
 sfa:
   ndti_green_nm: 570.0
