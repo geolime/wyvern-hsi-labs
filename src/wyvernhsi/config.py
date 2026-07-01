@@ -53,11 +53,9 @@ class ProxiesCfg:
     ngb_nm: list
     percentile_lo: float
     percentile_hi: float
-    hotspot_top_pct: float
     n_bins: int
     composite_w_ndti: float
     composite_w_ndci: float
-    composite_hotspot_top_pct: float
     state_split_pct: float
 
 @dataclass(frozen=True)
