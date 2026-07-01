@@ -1,0 +1,86 @@
+project:
+  name: forest_landcover
+  random_seed: 42
+
+pipeline:
+  stages:
+    - convert.py
+    - kmeans.py
+    - sam.py
+    - compute_indices.py
+    - analysis_metrics.py
+    - export_previews.py
+    - validate_landcover.py
+    - classify_rf.py
+
+clustering:
+  k: 5
+  pca_components: 8
+  n_samples: 50000
+  tile_size: 512
+  use_subset: true
+  subset_pad: 1200
+  subset_points:
+    - [896, 2163]
+    - [313, 3065]
+    - [1043, 3477]
+    - [3745, 2629]
+    - [3309, 3839]
+    - [3856, 3127]
+    - [3598, 3219]
+    - [239, 3999]
+    - [3966, 3200]
+    - [4378, 3489]
+    - [3690, 2789]
+    - [4421, 2838]
+    - [1350, 640]
+    - [3101, 1229]
+    - [2536, 1352]
+  sample_silhouette: 80000
+  stability_runs: 6
+
+features:
+  red_nm: 660.0
+  red_edge_nm: 720.0
+  nir_nm: 800.0
+  min_pixels: 1000
+
+sam:
+  angle_threshold_rad: 0.10
+  roi_half_size_px: 12
+  tile_size: 512
+  reference_classes:
+    dense_trees:
+      - [896, 2163]
+      - [313, 3065]
+      - [1043, 3477]
+      - [3745, 2629]
+      - [3309, 3839]
+    bright_veg:
+      - [3856, 3127]
+      - [3598, 3219]
+      - [239, 3999]
+      - [3966, 3200]
+      - [4378, 3489]
+    low_veg_soil:
+      - [3690, 2789]
+      - [4421, 2838]
+      - [1350, 640]
+      - [3101, 1229]
+      - [2536, 1352]
+
+validation:
+  reference_tif: data/reference/mapbiomas-bolivia-collection-30-2024.tif
+  reference_ignore: [0, 27, 30]
+  crosswalk:
+    trees:  [3, 4, 6]
+    crops:  [15, 21, 39, 72]
+    bare:   [23, 24, 25, 29, 61, 68]
+    # grass + water dropped: 0 and ~860 reference pixels in this scene
+
+random_forest:
+  max_samples_per_class: 50000
+  n_blocks: 8           # 8x8 grid; whole blocks go to train or test
+  test_frac: 0.30
+  n_estimators: 200
+  max_depth: 20
