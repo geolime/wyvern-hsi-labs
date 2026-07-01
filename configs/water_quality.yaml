@@ -41,9 +41,9 @@ proxies:
   percentile_lo: 2.0
   percentile_hi: 98.0
   hotspot_top_pct: 10.0
-  n_bins: 5
+  n_bins: 3
   composite_w_ndti: 1.0
-  composite_w_ndci: 0.5
+  composite_w_ndci: 1.0
   composite_hotspot_top_pct: 5.0
 
 sfa:
