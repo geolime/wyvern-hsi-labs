@@ -17,13 +17,13 @@ The library converts L1B top-of-atmosphere (TOA) radiance to TOA reflectance fro
 | **PC1 / 8-PC variance** | 77.5% / 99.0% | 74.2% / 95.9% |
 | **K=5 silhouette / ARI** | 0.39 / 0.65 | 0.33 / 0.82 |
 
-### ### Forest Landcover: Santa Cruz de la Sierra, Bolivia
+### Forest Landcover: Santa Cruz de la Sierra, Bolivia
 
 **Colour-infrared quicklook (full scene).** Healthy vegetation reflects strongly in the near-infrared and appears red; bare and built surfaces stay muted. This is the scene the land-cover pipeline operates on.
 
 ![Forest CIR quicklook](docs/figures/forest/cir_quicklook.png)
 
-### ### Water Quality: Bitter Lake, Egypt
+### Water Quality: Bitter Lake, Egypt
 
 **NGB composite (NIR-Green-Blue), QA-masked.** Clouds are removed (black); the inland water body is the analysis target for the turbidity and chlorophyll proxies.
 
