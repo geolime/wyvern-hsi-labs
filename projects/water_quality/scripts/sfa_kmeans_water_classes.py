@@ -62,9 +62,12 @@ def _save_class_map(lab, water, out_png, title, k, *, bg=None, alpha=1.0, transp
     plt.imshow(np.ma.masked_where(lab < 0, lab), cmap=visualization.masked_cmap(),
                vmin=0, vmax=k - 1, alpha=alpha)
     plt.contour(water.astype(np.uint8), levels=[0.5], linewidths=SHORELINE_LW)
-    plt.axis("off"); plt.title(title)
+    plt.axis("off")
+    plt.title(title)
     visualization.add_class_legend([f"{i}: {TURBIDITY_LABELS[i]}" for i in range(k)])
-    plt.tight_layout(); plt.savefig(out_png, dpi=200, transparent=transparent); plt.close()
+    plt.tight_layout()
+    plt.savefig(out_png, dpi=200, transparent=transparent)
+    plt.close()
     logger.info("Wrote: %s", out_png)
 
 
@@ -79,8 +82,11 @@ def _save_ngb_ndci(out_png, ngb, ndci, water):
     plt.imshow(ngb)
     plt.imshow(plot, cmap=cmap, vmin=vmin, vmax=vmax, alpha=0.55)
     plt.contour(water.astype(np.uint8), levels=[0.5], linewidths=SHORELINE_LW)
-    plt.axis("off"); plt.title("NDCI over NGB (water-only)"); plt.tight_layout()
-    plt.savefig(out_png, dpi=200); plt.close()
+    plt.axis("off")
+    plt.title("NDCI over NGB (water-only)")
+    plt.tight_layout()
+    plt.savefig(out_png, dpi=200)
+    plt.close()
     logger.info("Wrote: %s", out_png)
 
 
@@ -166,9 +172,12 @@ def main(config: Config) -> None:
     sel = rng.choice(X.shape[0], min(SCATTER_SAMPLE, X.shape[0]), replace=False)
     plt.figure(figsize=(7, 6))
     plt.scatter(X[sel, 0], X[sel, 1], s=1, c=y[sel], alpha=0.35)
-    plt.xlabel("NDTI"); plt.ylabel("NDCI")
+    plt.xlabel("NDTI")
+    plt.ylabel("NDCI")
     plt.title("SFA feature space (sample, colored by raw KMeans)")
-    plt.tight_layout(); plt.savefig(out_dir / f"{prefix}_scatter_ndti_ndci.png", dpi=200); plt.close()
+    plt.tight_layout()
+    plt.savefig(out_dir / f"{prefix}_scatter_ndti_ndci.png", dpi=200)
+    plt.close()
 
     _save_class_map(lab, water, out_dir / f"{prefix}.png",
                     f"SFA KMeans classes (K={k}, water-only)", k, transparent=True)

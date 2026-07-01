@@ -34,8 +34,10 @@ SAM_PALETTE = [(0.10, 0.45, 0.10), (0.30, 0.75, 0.30), (0.80, 0.70, 0.50)]
 def _save_quicklook(path, img, title):
     plt.figure(figsize=(12, 10))
     plt.imshow(img)
-    plt.axis("off"); plt.title(title)
-    plt.tight_layout(); plt.savefig(path, dpi=200, bbox_inches="tight", pad_inches=0.05)
+    plt.axis("off")
+    plt.title(title)
+    plt.tight_layout()
+    plt.savefig(path, dpi=200, bbox_inches="tight", pad_inches=0.05)
     plt.close()
     logger.info("Wrote: %s", path)
 
@@ -48,8 +50,10 @@ def _boundaries(lab):
     b = np.zeros(lab.shape, dtype=bool)
     dv = lab[:-1, :] != lab[1:, :]
     dh = lab[:, :-1] != lab[:, 1:]
-    b[:-1, :] |= dv; b[1:, :] |= dv
-    b[:, :-1] |= dh; b[:, 1:] |= dh
+    b[:-1, :] |= dv
+    b[1:, :] |= dv
+    b[:, :-1] |= dh
+    b[:, 1:] |= dh
     return b
 
 
@@ -67,19 +71,27 @@ def _preview(lab, cir, *, class_colors, class_names, nodata_color, draw_boundari
         outline = np.zeros((*lab.shape, 4), dtype=np.float32)
         outline[_boundaries(lab)] = (1, 1, 1, 0.8)
         plt.imshow(outline)
-    plt.axis("off"); plt.title(title)
+    plt.axis("off")
+    plt.title(title)
     visualization.add_class_legend(class_names, colors=class_colors)
     plt.figtext(0.5, 0.02, "white / transparent = nodata, cloud & QA-masked areas",
                 ha="center", fontsize=8, color="0.4")
-    plt.tight_layout(); plt.savefig(class_only_png, dpi=200); plt.close()
+    plt.tight_layout()
+    plt.savefig(class_only_png, dpi=200)
+    plt.close()
 
     overlay = np.zeros((*lab.shape, 4), dtype=np.float32)
     overlay[lab == -1] = (*nodata_color, 0.20)
     for i in range(nclass):
         overlay[lab == i] = (*class_colors[i], 0.55)
-    plt.figure(figsize=(14, 10)); plt.imshow(cir); plt.imshow(overlay)
-    plt.axis("off"); plt.title(f"{title} — overlay (CIR)")
-    plt.tight_layout(); plt.savefig(overlay_png, dpi=200); plt.close()
+    plt.figure(figsize=(14, 10))
+    plt.imshow(cir)
+    plt.imshow(overlay)
+    plt.axis("off")
+    plt.title(f"{title} — overlay (CIR)")
+    plt.tight_layout()
+    plt.savefig(overlay_png, dpi=200)
+    plt.close()
     logger.info("Wrote: %s, %s", class_only_png, overlay_png)
 
 

@@ -34,8 +34,12 @@ TURBIDITY_LABELS = {
 
 
 def _save_quicklook(path, u8):
-    plt.figure(figsize=(8, 8)); plt.imshow(u8); plt.axis("off")
-    plt.tight_layout(pad=0); plt.savefig(path, dpi=200, bbox_inches="tight", pad_inches=0); plt.close()
+    plt.figure(figsize=(8, 8))
+    plt.imshow(u8)
+    plt.axis("off")
+    plt.tight_layout(pad=0)
+    plt.savefig(path, dpi=200, bbox_inches="tight", pad_inches=0)
+    plt.close()
     logger.info("Wrote: %s", path)
 
 
@@ -46,9 +50,12 @@ def _draw_classes(path, lab, water, k, title, *, bg=None, alpha=1.0, transparent
     plt.imshow(np.ma.masked_where(lab < 0, lab), cmap=visualization.masked_cmap(),
                vmin=0, vmax=k - 1, alpha=alpha)
     plt.contour(water.astype(np.uint8), levels=[0.5], linewidths=0.5)
-    plt.axis("off"); plt.title(title)
+    plt.axis("off")
+    plt.title(title)
     visualization.add_class_legend([f"{i}: {TURBIDITY_LABELS.get(i, '')}" for i in range(k)])
-    plt.tight_layout(); plt.savefig(path, dpi=200, transparent=transparent); plt.close()
+    plt.tight_layout()
+    plt.savefig(path, dpi=200, transparent=transparent)
+    plt.close()
     logger.info("Wrote: %s", path)
 
 

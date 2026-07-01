@@ -55,7 +55,8 @@ def _save_confusion(cm_df, title, out_png):
     plt.imshow(norm, cmap=_CM_CMAP, vmin=0, vmax=1)
     plt.xticks(range(len(cm_df.columns)), [c.replace("ref_", "") for c in cm_df.columns])
     plt.yticks(range(len(cm_df.index)), [c.replace("pred_", "") for c in cm_df.index])
-    plt.xlabel("Reference"); plt.ylabel("Predicted")
+    plt.xlabel("Reference")
+    plt.ylabel("Predicted")
     for i in range(cm.shape[0]):
         for j in range(cm.shape[1]):
             n = int(cm[i, j])
@@ -64,8 +65,10 @@ def _save_confusion(cm_df, title, out_png):
             color = "white" if norm[i, j] > 0.55 else "#01204E"
             plt.text(j, i, f"{n:,}\n{pct:.1f}%", ha="center", va="center",
                      fontsize=9, color=color)
-    plt.title(title); plt.tight_layout()
-    plt.savefig(out_png, dpi=200); plt.close()
+    plt.title(title)
+    plt.tight_layout()
+    plt.savefig(out_png, dpi=200)
+    plt.close()
     logger.info("Wrote: %s", out_png)
 
 

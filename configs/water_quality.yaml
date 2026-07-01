@@ -9,7 +9,6 @@ pipeline:
     - pca_kmeans_water.py
     - proxy_map_ndti_ndci.py
     - composite_proxy_map.py
-    - make_proxy_panels.py
     - export_previews.py
 
 masking:

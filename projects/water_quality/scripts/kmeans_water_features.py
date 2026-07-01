@@ -49,9 +49,12 @@ def _feature_row(c, mk, X):
 def _save_class_png(lab, out_png, title, k):
     plt.figure(figsize=(12, 10))
     plt.imshow(np.ma.masked_where(lab < 0, lab), vmin=0, vmax=k - 1, cmap=visualization.masked_cmap())
-    plt.axis("off"); plt.title(title)
+    plt.axis("off")
+    plt.title(title)
     visualization.add_class_legend([f"{i}: {TURBIDITY_LABELS[i]}" for i in range(k)])
-    plt.tight_layout(); plt.savefig(out_png, dpi=200, transparent=True); plt.close()
+    plt.tight_layout()
+    plt.savefig(out_png, dpi=200, transparent=True)
+    plt.close()
     logger.info("Wrote: %s", out_png)
 
 
@@ -139,9 +142,12 @@ def main(config: Config) -> None:
                         ("ndci_median", "Median NDCI (chlorophyll proxy)")):
         plt.figure(figsize=(8, 4))
         plt.bar(df_out["cluster_ordered"].astype(int).astype(str), df_out[feat])
-        plt.xlabel("Cluster (ordered)"); plt.ylabel(title.split("(")[0].strip()); plt.title(title)
+        plt.xlabel("Cluster (ordered)")
+        plt.ylabel(title.split("(")[0].strip())
+        plt.title(title)
         plt.tight_layout()
-        plt.savefig(out_dir / f"{prefix}_{feat.replace('_median', '')}_median.png", dpi=200); plt.close()
+        plt.savefig(out_dir / f"{prefix}_{feat.replace('_median', '')}_median.png", dpi=200)
+        plt.close()
     logger.info("Wrote feature maps, class map, bar charts")
 
 

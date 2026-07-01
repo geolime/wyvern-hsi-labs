@@ -38,7 +38,8 @@ TURBIDITY_TIERS = {
 
 def _render_table(df, out_png, title):
     plt.figure(figsize=(12, 2.0 + 0.35 * len(df)))
-    plt.axis("off"); plt.title(title)
+    plt.axis("off")
+    plt.title(title)
     d = df.copy()
     for col in ("water_fraction", "ndti_median", "ndci_median", "nir_red_median"):
         if col in d.columns:
@@ -46,8 +47,12 @@ def _render_table(df, out_png, title):
     if "n" in d.columns:
         d["n"] = d["n"].map(lambda x: f"{int(x):,}")
     table = plt.table(cellText=d.values, colLabels=list(d.columns), cellLoc="center", loc="center")
-    table.auto_set_font_size(False); table.set_fontsize(9); table.scale(1, 1.4)
-    plt.tight_layout(); plt.savefig(out_png, dpi=200, bbox_inches="tight", pad_inches=0.05); plt.close()
+    table.auto_set_font_size(False)
+    table.set_fontsize(9)
+    table.scale(1, 1.4)
+    plt.tight_layout()
+    plt.savefig(out_png, dpi=200, bbox_inches="tight", pad_inches=0.05)
+    plt.close()
     logger.info("Wrote: %s", out_png)
 
 

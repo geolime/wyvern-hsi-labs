@@ -41,13 +41,18 @@ def _save_confusion(cm_df, title, out_png):
     plt.imshow(norm, cmap=_CM_CMAP, vmin=0, vmax=1)
     plt.xticks(range(len(cm_df.columns)), [c.replace("ref_", "") for c in cm_df.columns])
     plt.yticks(range(len(cm_df.index)), [c.replace("pred_", "") for c in cm_df.index])
-    plt.xlabel("Reference"); plt.ylabel("Predicted")
+    plt.xlabel("Reference")
+    plt.ylabel("Predicted")
     for i in range(cm.shape[0]):
         for j in range(cm.shape[1]):
-            n = int(cm[i, j]); pct = (n / total * 100) if total else 0.0
+            n = int(cm[i, j])
+            pct = (n / total * 100) if total else 0.0
             plt.text(j, i, f"{n:,}\n{pct:.1f}%", ha="center", va="center",
                      fontsize=9, color="white" if norm[i, j] > 0.55 else "#01204E")
-    plt.title(title); plt.tight_layout(); plt.savefig(out_png, dpi=200); plt.close()
+    plt.title(title)
+    plt.tight_layout()
+    plt.savefig(out_png, dpi=200)
+    plt.close()
     logger.info("Wrote: %s", out_png)
 
 
@@ -55,11 +60,14 @@ def _save_class_map(lab, classes, out_png, title):
     k = len(classes)
     plt.figure(figsize=(12, 10))
     plt.imshow(np.ma.masked_where(lab < 0, lab), cmap=visualization.masked_cmap(), vmin=0, vmax=k - 1)
-    plt.axis("off"); plt.title(title)
+    plt.axis("off")
+    plt.title(title)
     visualization.add_class_legend(classes, colors=visualization.class_colors(k))
     plt.figtext(0.5, 0.02, "white / transparent = nodata, cloud & QA-masked areas",
                 ha="center", fontsize=8, color="0.4")
-    plt.tight_layout(); plt.savefig(out_png, dpi=200, transparent=True); plt.close()
+    plt.tight_layout()
+    plt.savefig(out_png, dpi=200, transparent=True)
+    plt.close()
     logger.info("Wrote: %s", out_png)
 
 

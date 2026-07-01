@@ -66,9 +66,14 @@ def main(config: Config) -> None:
         (evr, "Explained variance ratio", "PCA explained variance (scree)", "pca_scree.png"),
         (cum, "Cumulative explained variance", "PCA cumulative explained variance", "pca_cumulative.png"),
     ):
-        plt.figure(figsize=(7, 4)); plt.plot(xs, ys, marker="o")
-        plt.xlabel("PC"); plt.ylabel(ylabel); plt.title(title)
-        plt.tight_layout(); plt.savefig(out / name, dpi=200); plt.close()
+        plt.figure(figsize=(7, 4))
+        plt.plot(xs, ys, marker="o")
+        plt.xlabel("PC")
+        plt.ylabel(ylabel)
+        plt.title(title)
+        plt.tight_layout()
+        plt.savefig(out / name, dpi=200)
+        plt.close()
 
     rng = np.random.default_rng(seed)
     sil_sel = rng.choice(Zs.shape[0], min(cl.sample_silhouette, Zs.shape[0]), replace=False)
@@ -82,19 +87,28 @@ def main(config: Config) -> None:
                              for uu, cc in zip(u.tolist(), c.tolist())]).sort_values("label")
     df_props.to_csv(out / f"kmeans_cluster_proportions_K{cl.k}.csv", index=False)
     dfp = df_props[df_props["label"] >= 0]
-    plt.figure(figsize=(7, 4)); plt.bar(dfp["label"].astype(str), dfp["fraction"])
-    plt.xlabel("Cluster"); plt.ylabel("Fraction of scene"); plt.title("KMeans cluster proportions")
-    plt.tight_layout(); plt.savefig(out / f"kmeans_cluster_proportions_K{cl.k}.png", dpi=200); plt.close()
+    plt.figure(figsize=(7, 4))
+    plt.bar(dfp["label"].astype(str), dfp["fraction"])
+    plt.xlabel("Cluster")
+    plt.ylabel("Fraction of scene")
+    plt.title("KMeans cluster proportions")
+    plt.tight_layout()
+    plt.savefig(out / f"kmeans_cluster_proportions_K{cl.k}.png", dpi=200)
+    plt.close()
 
     seeds = [seed + i * 17 for i in range(cl.stability_runs)]
     ari = clustering.ari_stability(Zs, k=cl.k, seeds=seeds)
     pd.DataFrame(ari, index=[f"seed_{s}" for s in seeds], columns=[f"seed_{s}" for s in seeds]) \
         .to_csv(out / f"kmeans_stability_ari_K{cl.k}.csv")
-    plt.figure(figsize=(6, 5)); plt.imshow(ari, interpolation="nearest")
+    plt.figure(figsize=(6, 5))
+    plt.imshow(ari, interpolation="nearest")
     plt.xticks(range(len(seeds)), [str(s) for s in seeds], rotation=45, ha="right")
     plt.yticks(range(len(seeds)), [str(s) for s in seeds])
-    plt.title("KMeans stability (ARI)"); plt.colorbar(); plt.tight_layout()
-    plt.savefig(out / f"kmeans_stability_ari_K{cl.k}.png", dpi=200); plt.close()
+    plt.title("KMeans stability (ARI)")
+    plt.colorbar()
+    plt.tight_layout()
+    plt.savefig(out / f"kmeans_stability_ari_K{cl.k}.png", dpi=200)
+    plt.close()
 
     # PCA PC1/2/3 composite (whole valid scene; cube already in memory)
     H, W, B = cube.shape
@@ -105,9 +119,13 @@ def main(config: Config) -> None:
     pcs[vflat] = Zv
     pcs = pcs.reshape(H, W, 3)
     pca_rgb = np.dstack([visualization.percentile_stretch(pcs[:, :, i]) for i in range(3)])
-    plt.figure(figsize=(14, 10)); plt.imshow(pca_rgb); plt.axis("off")
-    plt.title("PCA composite (PC1, PC2, PC3)"); plt.tight_layout()
-    plt.savefig(out / "pca_rgb_pc123.png", dpi=200); plt.close()
+    plt.figure(figsize=(14, 10))
+    plt.imshow(pca_rgb)
+    plt.axis("off")
+    plt.title("PCA composite (PC1, PC2, PC3)")
+    plt.tight_layout()
+    plt.savefig(out / "pca_rgb_pc123.png", dpi=200)
+    plt.close()
 
     # NDVI + red-edge slope separability between all cluster pairs (no hardcoded IDs)
     with rasterio.open(scene.reflectance) as ds:

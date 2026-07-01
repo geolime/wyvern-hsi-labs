@@ -32,16 +32,24 @@ logger = logging.getLogger(__name__)
 def _save_line(xs, ys, ylabel, title, out_png):
     plt.figure(figsize=(7, 4))
     plt.plot(xs, ys, marker="o")
-    plt.xlabel("PC"); plt.ylabel(ylabel); plt.title(title)
-    plt.tight_layout(); plt.savefig(out_png, dpi=200); plt.close()
+    plt.xlabel("PC")
+    plt.ylabel(ylabel)
+    plt.title(title)
+    plt.tight_layout()
+    plt.savefig(out_png, dpi=200)
+    plt.close()
 
 
 def _save_boxplot(values_per_cluster, ylabel, title, out_png):
     plt.figure(figsize=(10, 4))
     plt.boxplot(values_per_cluster,
                 tick_labels=[str(k) for k in range(len(values_per_cluster))], showfliers=False)
-    plt.xlabel("Cluster"); plt.ylabel(ylabel); plt.title(title)
-    plt.tight_layout(); plt.savefig(out_png, dpi=200); plt.close()
+    plt.xlabel("Cluster")
+    plt.ylabel(ylabel)
+    plt.title(title)
+    plt.tight_layout()
+    plt.savefig(out_png, dpi=200)
+    plt.close()
 
 
 def main(config: Config) -> None:
@@ -91,8 +99,11 @@ def main(config: Config) -> None:
     plt.imshow(ari, interpolation="nearest")
     plt.xticks(range(len(seeds)), [str(s) for s in seeds], rotation=45, ha="right")
     plt.yticks(range(len(seeds)), [str(s) for s in seeds])
-    plt.title("KMeans stability (ARI) — water-only"); plt.colorbar(); plt.tight_layout()
-    plt.savefig(out / f"{prefix}_stability_ari.png", dpi=200); plt.close()
+    plt.title("KMeans stability (ARI) — water-only")
+    plt.colorbar()
+    plt.tight_layout()
+    plt.savefig(out / f"{prefix}_stability_ari.png", dpi=200)
+    plt.close()
 
     # Whole water-only prediction (per-pixel, so identical to tiling)
     lab = clustering.predict_tile(cube, pca, fit.kmeans)
@@ -105,9 +116,12 @@ def main(config: Config) -> None:
     logger.info("Wrote: %s", out_tif)
 
     plt.figure(figsize=(12, 10))
-    plt.imshow(lab, vmin=0, vmax=cl.k - 1); plt.axis("off")
-    plt.title(f"KMeans clusters (water-only) — K={cl.k}"); plt.tight_layout()
-    plt.savefig(out / f"{prefix}.png", dpi=200); plt.close()
+    plt.imshow(lab, vmin=0, vmax=cl.k - 1)
+    plt.axis("off")
+    plt.title(f"KMeans clusters (water-only) — K={cl.k}")
+    plt.tight_layout()
+    plt.savefig(out / f"{prefix}.png", dpi=200)
+    plt.close()
 
     # Per-cluster proxies (bands resolved by wavelength, not hardcoded indices)
     keep = (lab >= 0) & np.isfinite(cube).all(axis=2)
@@ -130,9 +144,13 @@ def main(config: Config) -> None:
     pcs[use_flat] = Zv
     pcs = pcs.reshape(H, W, 3)
     rgb = np.dstack([visualization.percentile_stretch(pcs[:, :, i]) for i in range(3)])
-    plt.figure(figsize=(14, 10)); plt.imshow(rgb); plt.axis("off")
-    plt.title("PCA composite (PC1, PC2, PC3) — water-only"); plt.tight_layout()
-    plt.savefig(out / f"{prefix}_pca_pc123.png", dpi=200); plt.close()
+    plt.figure(figsize=(14, 10))
+    plt.imshow(rgb)
+    plt.axis("off")
+    plt.title("PCA composite (PC1, PC2, PC3) — water-only")
+    plt.tight_layout()
+    plt.savefig(out / f"{prefix}_pca_pc123.png", dpi=200)
+    plt.close()
 
     # Mean spectra per cluster (in-memory; cube already loaded)
     means, counts = clustering.cluster_mean_spectra([(cube, lab)], k=cl.k, n_bands=B, normalize=True)
@@ -143,8 +161,10 @@ def main(config: Config) -> None:
     plt.xlabel("Wavelength (nm)")
     plt.ylabel("L2-normalized TOA reflectance")  # corrected from "radiance"
     plt.title(f"Cluster mean spectra (water-only) — K={cl.k}, PCA={cl.pca_components}")
-    plt.legend(); plt.tight_layout()
-    plt.savefig(out / f"{prefix}_cluster_mean_spectra.png", dpi=200); plt.close()
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(out / f"{prefix}_cluster_mean_spectra.png", dpi=200)
+    plt.close()
 
     ari_offdiag = float((ari.sum() - np.trace(ari)) / (ari.size - len(seeds)))
     (out / f"{prefix}_summary.txt").write_text(
