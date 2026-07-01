@@ -1,9 +1,15 @@
 """
-Composite optical proxy map: a weighted z-score blend of NDTI (turbidity) and NDCI
-(chlorophyll) over water, as a continuous map and a top-percentile hotspot overlay on NGB.
+Illustrative optical composite: an equal-weight z-score blend of NDTI (turbidity) and NDCI
+(chlorophyll) over water, as a single continuous water-only map.
 
-NOTE: a heuristic optical composite on TOA reflectance with arbitrary weights — NOT a
-validated environmental risk index. Renamed from "risk_proxy" to avoid that overclaim.
+This is a DEMOTED, secondary product with NO physical basis. NDTI and NDCI measure
+physically distinct things (sediment vs algae), and averaging their z-scores does not
+estimate any real quantity. The primary, honest products are the independent NDTI and NDCI
+tier maps and the NDTI-NDCI scatter (proxy_map_ndti_ndci.py). Equal weights are used
+deliberately, to signal that the weighting encodes no claim.
+
+NOTE: TOA reflectance, no atmospheric correction. A relative optical blend, NOT a validated
+environmental or "risk" index.
 """
 from __future__ import annotations
 
@@ -11,7 +17,6 @@ import logging
 
 import matplotlib
 matplotlib.use("Agg")
-import matplotlib.pyplot as plt
 import numpy as np
 import rasterio
 
@@ -47,7 +52,6 @@ def main(config: Config) -> None:
     with rasterio.open(scene.reflectance) as ds:
         ndti = indices.ndti(io.read_band_nm(ds, p.ndti_red_nm), io.read_band_nm(ds, p.ndti_green_nm))
         ndci = indices.ndci(io.read_band_nm(ds, p.ndci_red_edge_nm), io.read_band_nm(ds, p.ndci_red_nm))
-        ngb = visualization.stretch_rgb(io.read_composite(ds, p.ngb_nm), p.percentile_lo, p.percentile_hi)
 
     ndti[~use] = np.nan
     ndci[~use] = np.nan
@@ -55,18 +59,11 @@ def main(config: Config) -> None:
                  + p.composite_w_ndci * _zscore_on_mask(ndci, use)).astype(np.float32)
     composite[~use] = np.nan
 
-    visualization.save_heatmap(out_dir / "optical_proxy_composite_continuous.png", composite,
-                               f"Composite optical proxy = {p.composite_w_ndti}*z(NDTI) + "
-                               f"{p.composite_w_ndci}*z(NDCI) (water-only)")
-
-    top = int(p.composite_hotspot_top_pct)
-    v = composite[use & np.isfinite(composite)]
-    thr = np.percentile(v, 100.0 - p.composite_hotspot_top_pct) if v.size else np.inf
-    hot = use & np.isfinite(composite) & (composite >= thr)
-    visualization.save_contour_overlay(
-        out_dir / f"optical_proxy_composite_hotspots_top{top}_on_ngb.png", ngb,
-        [(hot, "yellow", 1.0), (water, "white", 0.6)],
-        f"Composite optical-proxy hotspots (top {top}% water-only) over NGB")
+    visualization.save_heatmap(
+        out_dir / "optical_proxy_composite_continuous.png", composite,
+        f"Illustrative NDTI+NDCI blend "
+        f"({p.composite_w_ndti:g}*z(NDTI) + {p.composite_w_ndci:g}*z(NDCI), water-only)\n"
+        f"secondary, no physical basis: see the NDTI and NDCI tier maps")
 
 
 if __name__ == "__main__":
